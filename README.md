@@ -6,16 +6,8 @@
 
 _**Delimitación espacial para VR que muestra el chaperone.**_
 
-
 </header>
    
 <footer>
-
-### 📸 Social Preview
-- [ ] Sube una imagen `preview.png` personalizada en `Settings → Social Preview`.
-
-### 🎨 Personalización visual
-- [ ] Cambiar imagen del banner de portada.
-
 
 </footer>
