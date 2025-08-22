@@ -1,6 +1,6 @@
 <header>
 
-![Banner](https://github.com/user-attachments/assets/5b933a56-0ece-452a-99c0-1a641485a6b9)
+![Chaperone - Main - Windows, Mac, Linux - Unity 6 (6000 0 42f1) _DX11_ 2025-08-22 16-43-39](https://github.com/user-attachments/assets/80d15969-9733-4d79-bc09-9fc0a74d4821)
 
 # **Chaperone**
 
