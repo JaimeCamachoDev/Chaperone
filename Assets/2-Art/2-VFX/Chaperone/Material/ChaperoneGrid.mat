@@ -38,12 +38,12 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AlphaThreshold: 9.38
-    - _BlueThreshold: 2
+    - _AlphaThreshold: 1
+    - _BlueThreshold: 1
     - _LineThickness: 0.19
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _RedThreshold: 1
+    - _RedThreshold: 0.5
     m_Colors:
     - _GridColor: {r: 0, g: 0.7648358, b: 1, a: 0}
     - _GridColorDanger: {r: 1, g: 0.11678017, b: 0, a: 0}

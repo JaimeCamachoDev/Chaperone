@@ -41,8 +41,8 @@ Material:
     - _AlphaCutoff: 0.5
     - _AlphaThreshold: 9.38
     - _BlueThreshold: 1
-    - _CellSize: 0
-    - _FadeBand: 0.6
+    - _CellSize: 0.2
+    - _FadeBand: 1
     - _LineThickness: 0.9
     - _LineWidthMeters: 0.03
     - _QueueControl: 0
