@@ -432,17 +432,19 @@ namespace AmplifyShaderEditor
 			string tiling = string.Empty;
 			string offset = string.Empty;
 
+			TexturePropertyNode textureProperty = null;
 			string portProperty = string.Empty;
 			if( m_texPort.IsConnected )
 			{
+				textureProperty = m_texPort.GetOutputNodeWhichIsNotRelay( 0 ) as TexturePropertyNode;
 				portProperty = m_texPort.GeneratePortInstructions( ref dataCollector );
 			}
 			else if( m_referenceArrayId > -1 )
 			{
-				TexturePropertyNode temp = UIUtils.GetTexturePropertyNode( m_referenceArrayId );
-				if( temp != null )
+				textureProperty = UIUtils.GetTexturePropertyNode( m_referenceArrayId );
+				if( textureProperty != null )
 				{
-					portProperty = temp.BaseGenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalVar );
+					portProperty = textureProperty.BaseGenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalVar );
 				}
 			}
 
@@ -489,17 +491,11 @@ namespace AmplifyShaderEditor
 						m_texCoordsHelper.ContainerGraph = ContainerGraph;
 						m_texCoordsHelper.SetBaseUniqueId( UniqueId, true );
 						m_texCoordsHelper.RegisterPropertyOnInstancing = false;
-						m_texCoordsHelper.AddGlobalToSRPBatcher = true;
 					}
 
-					if( UIUtils.CurrentWindow.OutsideGraph.IsInstancedShader )
-					{
-						m_texCoordsHelper.CurrentParameterType = PropertyType.InstancedProperty;
-					}
-					else
-					{
-						m_texCoordsHelper.CurrentParameterType = PropertyType.Global;
-					}
+					m_texCoordsHelper.AddGlobalToSRPBatcher = ( textureProperty != null ) ? ( textureProperty.CurrentParameterType != PropertyType.Global ) : true;
+					m_texCoordsHelper.CurrentParameterType = PropertyType.Global;
+
 					m_texCoordsHelper.ResetOutputLocals();
 					m_texCoordsHelper.SetRawPropertyName( dummyPropertyTexcoords );
 					dummyPropertyTexcoords = m_texCoordsHelper.GenerateShaderForOutput( 0, ref dataCollector, false );

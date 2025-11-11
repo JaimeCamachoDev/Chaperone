@@ -739,7 +739,7 @@ Shader /*ase_name*/ "Hidden/Universal/2D Lit" /*end*/
 			{
 				/*ase_frag_code:IN=VertexOutput*/
 				float4 Color = /*ase_frag_out:Color;Float4;0;-1;_Color*/float4( 1, 1, 1, 1 )/*end*/;
-				half4 outColor = _SelectionID;
+				half4 outColor = unity_SelectionID;
 				return outColor;
 			}
 

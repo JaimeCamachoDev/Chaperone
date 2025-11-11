@@ -757,6 +757,11 @@ namespace AmplifyShaderEditor
 			//else if( maxSize == WirePortDataType.FLOAT4 )
 			//	sizeDif = "4";
 
+			if ( !dataCollector.IsTemplate && ( size == WirePortDataType.FLOAT3 || size == WirePortDataType.FLOAT4 ) )
+			{
+				dataCollector.UsingHigherSizeTexcoords = true;
+			}
+
 			if ( !dataCollector.IsTemplate && index > 3 )
 			{
 				string texCoordNameIn = TemplateHelperFunctions.BaseInterpolatorName + index;

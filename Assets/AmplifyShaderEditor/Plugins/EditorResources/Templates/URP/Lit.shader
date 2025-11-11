@@ -21,7 +21,7 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 
 		//_InstancedTerrainNormals("Instanced Terrain Normals", Float) = 1.0
 
-		[ToggleOff] _SpecularHighlights("Specular Highlights", Float) = 1.0
+		[ToggleOff(_SPECULARHIGHLIGHTS_OFF)] _SpecularHighlights("Specular Highlights", Float) = 1.0
 		[ToggleOff] _EnvironmentReflections("Environment Reflections", Float) = 1.0
 		[ToggleUI] _ReceiveShadows("Receive Shadows", Float) = 1.0
 
@@ -38,51 +38,40 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 	SubShader
 	{
 		/*ase_subshader_options:Name=Additional Options
-			Option:Category:Geometry,Terrain:Geometry
-				Geometry:SetDefine:ASE_GEOMETRY 1
-				Geometry:RemoveDefine:ASE_TERRAIN 1
-				Geometry:HideOption:  Instanced Terrain Normals
-				Geometry:RemoveDefine:Forward:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
-				Geometry:RemoveDefine:GBuffer:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
-				Geometry:RemoveDefine:DepthOnly:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
-				Geometry:RemoveDefine:Forward:_INSTANCEDTERRAINNORMALS_PIXEL
-				Geometry:RemoveDefine:GBuffer:_INSTANCEDTERRAINNORMALS_PIXEL
-				Geometry:RemoveDefine:DepthOnly:_INSTANCEDTERRAINNORMALS_PIXEL
-				Terrain:SetDefine:ASE_TERRAIN 1
-				Terrain:RemoveDefine:ASE_GEOMETRY 1
+			Option:Category,InvertActionOnDeselection:Geometry,Terrain,Impostor:Geometry
+				Geometry:SetDefine:ASE_GEOMETRY
+				Terrain:SetDefine:ASE_TERRAIN
 				Terrain:ShowOption:  Instanced Terrain Normals
-			Option:  Instanced Terrain Normals:Force Vertex,Force Pixel,Material Option:Force Pixel
-				Force Vertex:RemoveDefine:Forward:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
-				Force Vertex:RemoveDefine:GBuffer:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
-				Force Vertex:RemoveDefine:DepthNormals:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
-				Force Vertex:RemoveDefine:Forward:_INSTANCEDTERRAINNORMALS_PIXEL
-				Force Vertex:RemoveDefine:GBuffer:_INSTANCEDTERRAINNORMALS_PIXEL
-				Force Vertex:RemoveDefine:DepthNormals:_INSTANCEDTERRAINNORMALS_PIXEL
-				Force Vertex:SetShaderProperty:_InstancedTerrainNormals,//[KeywordEnum(Vertex, Pixel)] _InstancedTerrainNormals("Instanced Terrain Normals", Float) = 1.0
-				Force Pixel:RemoveDefine:Forward:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
-				Force Pixel:RemoveDefine:GBuffer:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
-				Force Pixel:RemoveDefine:DepthNormals:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
-				Force Pixel:SetDefine:Forward:_INSTANCEDTERRAINNORMALS_PIXEL
-				Force Pixel:SetDefine:GBuffer:_INSTANCEDTERRAINNORMALS_PIXEL
-				Force Pixel:SetDefine:DepthNormals:_INSTANCEDTERRAINNORMALS_PIXEL
-				Force Pixel:SetShaderProperty:_InstancedTerrainNormals,//[KeywordEnum(Vertex, Pixel)] _InstancedTerrainNormals("Instanced Terrain Normals", Float) = 1.0
-				Material Option:SetDefine:Forward:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
-				Material Option:SetDefine:GBuffer:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
-				Material Option:SetDefine:DepthNormals:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
-				Material Option:RemoveDefine:Forward:_INSTANCEDTERRAINNORMALS_PIXEL
-				Material Option:RemoveDefine:GBuffer:_INSTANCEDTERRAINNORMALS_PIXEL
-				Material Option:RemoveDefine:DepthNormals:_INSTANCEDTERRAINNORMALS_PIXEL
-				Material Option:SetShaderProperty:_InstancedTerrainNormals,[KeywordEnum(Vertex, Pixel)] _InstancedTerrainNormals("Instanced Terrain Normals", Float) = 1.0
+				Terrain:SetPropertyOnPass:ScenePickingPass:ChangeTagValue,LightMode,Picking
+				Impostor:SetDefine:ASE_IMPOSTOR
+				Geometry,Impostor:SetPropertyOnPass:ScenePickingPass:ChangeTagValue,LightMode,ScenePickingPass
+			Option:  Instanced Terrain Normals,InvertActionOnDeselection:Force Vertex,Force Pixel,Material Option:Force Pixel
+				Force Vertex?Category=Terrain:SetShaderProperty:_InstancedTerrainNormals,//[KeywordEnum(Vertex, Pixel)] _InstancedTerrainNormals("Instanced Terrain Normals", Float) = 1.0
+				Force Pixel?Category=Terrain:SetDefine:_INSTANCEDTERRAINNORMALS_PIXEL
+				Force Pixel?Category=Terrain:SetShaderProperty:_InstancedTerrainNormals,//[KeywordEnum(Vertex, Pixel)] _InstancedTerrainNormals("Instanced Terrain Normals", Float) = 1.0
+				Material Option?Category=Terrain:SetDefine:Forward:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
+				Material Option?Category=Terrain:SetDefine:GBuffer:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
+				Material Option?Category=Terrain:SetDefine:DepthNormals:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
+				Material Option?Category=Terrain:SetShaderProperty:_InstancedTerrainNormals,[KeywordEnum(Vertex, Pixel)] _InstancedTerrainNormals("Instanced Terrain Normals", Float) = 1.0
+				disable:RemoveDefine:Forward:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
+				disable:RemoveDefine:GBuffer:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
+				disable:RemoveDefine:DepthNormals:pragma shader_feature _INSTANCEDTERRAINNORMALS_PIXEL
+				disable:RemoveDefine:_INSTANCEDTERRAINNORMALS_PIXEL
+				disable:SetShaderProperty:_InstancedTerrainNormals,//[KeywordEnum(Vertex, Pixel)] _InstancedTerrainNormals("Instanced Terrain Normals", Float) = 1.0
 			Option:Lighting Model:PBR,Simple:PBR
 				PBR:SetPropertyOnSubShader:ChangeTagValue,UniversalMaterialType,Lit
-				PBR:SetShaderProperty:_SpecularHighlights,1
-				PBR:SetShaderProperty:_EnvironmentReflections,1
 				PBR:RemoveDefine:ASE_LIGHTING_SIMPLE
+				PBR:ShowOption:Environment Reflections
+				PBR:SetShaderProperty:_EnvironmentReflections,[ToggleOff] _EnvironmentReflections("Environment Reflections", Float) = 1.0
 				Simple:SetOption:Workflow,0
 				Simple:SetDefine:ASE_LIGHTING_SIMPLE
 				Simple:SetPropertyOnSubShader:ChangeTagValue,UniversalMaterialType,SimpleLit
-				Simple:SetShaderProperty:_SpecularHighlights,0
-				Simple:SetShaderProperty:_EnvironmentReflections,0
+				Simple,disable:HideOption:Environment Reflections
+				Simple:SetShaderProperty:_EnvironmentReflections,//[ToggleOff] _EnvironmentReflections("Environment Reflections", Float) = 1.0
+				Simple:RemoveDefine:Forward:pragma multi_compile_local_fragment _ENVIRONMENTREFLECTIONS_OFF
+				Simple:RemoveDefine:GBuffer:pragma multi_compile_local_fragment _ENVIRONMENTREFLECTIONS_OFF
+				Simple:RemoveDefine:Forward:pragma shader_feature_local_fragment _ENVIRONMENTREFLECTIONS_OFF
+				Simple:RemoveDefine:GBuffer:pragma shader_feature_local_fragment _ENVIRONMENTREFLECTIONS_OFF
 			Option:Workflow:Specular,Metallic:Metallic
 				Specular:SetDefine:_SPECULAR_SETUP 1
 				Specular:ShowPort:Forward:Specular
@@ -95,6 +84,7 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 				Opaque:SetPropertyOnSubShader:RenderType,Opaque
 				Opaque:SetPropertyOnSubShader:RenderQueue,Geometry
 				Opaque:SetPropertyOnSubShader:ZWrite,On
+				Opaque:ShowOption:  Keep Alpha
 				Opaque:HideOption:  Refraction Model
 				Opaque:HideOption:  Blend
 				Opaque:RemoveDefine:_SURFACE_TYPE_TRANSPARENT 1
@@ -102,9 +92,13 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 				Transparent:SetPropertyOnSubShader:RenderType,Transparent
 				Transparent:SetPropertyOnSubShader:RenderQueue,Transparent
 				Transparent:SetPropertyOnSubShader:ZWrite,Off
+				Transparent:HideOption:  Keep Alpha
 				Transparent:ShowOption:  Refraction Model
 				Transparent:ShowOption:  Blend
 				Transparent:SetDefine:_SURFACE_TYPE_TRANSPARENT 1
+			Option:  Keep Alpha:false,true:false
+				true:SetDefine:ASE_OPAQUE_KEEP_ALPHA
+				false:RemoveDefine:ASE_OPAQUE_KEEP_ALPHA
 			Option:  Refraction Model:None,Legacy:None
 				None,disable:HidePort:Forward:Refraction Index
 				None,disable:HidePort:Forward:Refraction Color
@@ -132,28 +126,12 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 				true?Cast Shadows=true:ShowOption:  Use Shadow Threshold
 				true?Surface=Opaque:SetPropertyOnSubShader:RenderType,TransparentCutout
 				true?Surface=Opaque:SetPropertyOnSubShader:RenderQueue,AlphaTest
-				true:SetDefine:Forward:pragma multi_compile_local_fragment _ALPHATEST_ON
-				true:SetDefine:GBuffer:pragma multi_compile_local_fragment _ALPHATEST_ON
-				true:SetDefine:Meta:pragma multi_compile_local_fragment _ALPHATEST_ON
-				true:SetDefine:Universal2D:pragma multi_compile_local_fragment _ALPHATEST_ON
-				true:SetDefine:ShadowCaster:pragma multi_compile_local _ALPHATEST_ON
-				true:SetDefine:DepthOnly:pragma multi_compile_local _ALPHATEST_ON
-				true:SetDefine:DepthNormals:pragma multi_compile_local _ALPHATEST_ON
-				true:SetDefine:MotionVectors:pragma multi_compile_local _ALPHATEST_ON
-				true:SetDefine:XRMotionVectors:pragma multi_compile_local _ALPHATEST_ON
+				true:SetDefine:_ALPHATEST_ON
 				false:HidePort:Forward:Alpha Clip Threshold
 				false:SetOption:  Use Shadow Threshold,0
 				false:HideOption:  Use Shadow Threshold
 				false:RefreshOption:Surface
-				false:RemoveDefine:Forward:pragma multi_compile_local_fragment _ALPHATEST_ON
-				false:RemoveDefine:GBuffer:pragma multi_compile_local_fragment _ALPHATEST_ON
-				false:RemoveDefine:Meta:pragma multi_compile_local_fragment _ALPHATEST_ON
-				false:RemoveDefine:Universal2D:pragma multi_compile_local_fragment _ALPHATEST_ON
-				false:RemoveDefine:ShadowCaster:pragma multi_compile_local _ALPHATEST_ON
-				false:RemoveDefine:DepthOnly:pragma multi_compile_local _ALPHATEST_ON
-				false:RemoveDefine:DepthNormals:pragma multi_compile_local _ALPHATEST_ON
-				false:RemoveDefine:MotionVectors:pragma multi_compile_local _ALPHATEST_ON
-				false:RemoveDefine:XRMotionVectors:pragma multi_compile_local _ALPHATEST_ON
+				false:RemoveDefine:_ALPHATEST_ON
 			Option:  Use Shadow Threshold:false,true:false
 				true:ShowPort:Forward:Alpha Clip Threshold Shadow
 				true:SetDefine:_ALPHATEST_SHADOW_ON 1
@@ -237,52 +215,43 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 				true?Alpha Clipping=true:ShowOption:  Use Shadow Threshold
 				false:HideOption:  Use Shadow Threshold
 			Option:Receive Shadows:Force Off,Force On,Material Toggle:Material Toggle
-				Force On:RemoveDefine:Forward:pragma multi_compile_local_fragment _RECEIVE_SHADOWS_OFF
-				Force On:RemoveDefine:GBuffer:pragma multi_compile_local_fragment _RECEIVE_SHADOWS_OFF
+				Force On:RemoveDefine:_RECEIVE_SHADOWS_OFF
 				Force On:RemoveDefine:Forward:pragma shader_feature_local_fragment _RECEIVE_SHADOWS_OFF
 				Force On:RemoveDefine:GBuffer:pragma shader_feature_local_fragment _RECEIVE_SHADOWS_OFF
 				Force On:SetShaderProperty:_ReceiveShadows,//[ToggleUI] _ReceiveShadows("Receive Shadows", Float) = 1.0
 				Force Off:RemoveDefine:Forward:pragma shader_feature_local_fragment _RECEIVE_SHADOWS_OFF
 				Force Off:RemoveDefine:GBuffer:pragma shader_feature_local_fragment _RECEIVE_SHADOWS_OFF
-				Force Off:SetDefine:Forward:pragma multi_compile_local_fragment _RECEIVE_SHADOWS_OFF
-				Force Off:SetDefine:GBuffer:pragma multi_compile_local_fragment _RECEIVE_SHADOWS_OFF
+				Force Off:SetDefine:_RECEIVE_SHADOWS_OFF
 				Force Off:SetShaderProperty:_ReceiveShadows,//[ToggleUI] _ReceiveShadows("Receive Shadows", Float) = 1.0
 				Material Toggle:SetDefine:Forward:pragma shader_feature_local_fragment _RECEIVE_SHADOWS_OFF
 				Material Toggle:SetDefine:GBuffer:pragma shader_feature_local_fragment _RECEIVE_SHADOWS_OFF
-				Material Toggle:RemoveDefine:Forward:pragma multi_compile_local_fragment _RECEIVE_SHADOWS_OFF
-				Material Toggle:RemoveDefine:GBuffer:pragma multi_compile_local_fragment _RECEIVE_SHADOWS_OFF
+				Material Toggle:RemoveDefine:_RECEIVE_SHADOWS_OFF
 				Material Toggle:SetShaderProperty:_ReceiveShadows,[ToggleUI] _ReceiveShadows("Receive Shadows", Float) = 1.0
 			Option:Specular Highlights:Force Off,Force On,Material Toggle:Material Toggle
-				Force On:RemoveDefine:Forward:pragma multi_compile_local_fragment _SPECULARHIGHLIGHTS_OFF
-				Force On:RemoveDefine:GBuffer:pragma multi_compile_local_fragment _SPECULARHIGHLIGHTS_OFF
+				Force On:RemoveDefine:_SPECULARHIGHLIGHTS_OFF
 				Force On:RemoveDefine:Forward:pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF
 				Force On:RemoveDefine:GBuffer:pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF
-				Force On:SetShaderProperty:_SpecularHighlights,//[ToggleOff] _SpecularHighlights("Specular Highlights", Float) = 1.0
+				Force On:SetShaderProperty:_SpecularHighlights,//[ToggleOff(_SPECULARHIGHLIGHTS_OFF)] _SpecularHighlights("Specular Highlights", Float) = 1.0
 				Force Off:RemoveDefine:Forward:pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF
 				Force Off:RemoveDefine:GBuffer:pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF
-				Force Off:SetDefine:Forward:pragma multi_compile_local_fragment _SPECULARHIGHLIGHTS_OFF
-				Force Off:SetDefine:GBuffer:pragma multi_compile_local_fragment _SPECULARHIGHLIGHTS_OFF
-				Force Off:SetShaderProperty:_SpecularHighlights,//[ToggleOff] _SpecularHighlights("Specular Highlights", Float) = 1.0
+				Force Off:SetDefine:_SPECULARHIGHLIGHTS_OFF
+				Force Off:SetShaderProperty:_SpecularHighlights,//[ToggleOff(_SPECULARHIGHLIGHTS_OFF)] _SpecularHighlights("Specular Highlights", Float) = 1.0
 				Material Toggle:SetDefine:Forward:pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF
 				Material Toggle:SetDefine:GBuffer:pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF
-				Material Toggle:RemoveDefine:Forward:pragma multi_compile_local_fragment _SPECULARHIGHLIGHTS_OFF
-				Material Toggle:RemoveDefine:GBuffer:pragma multi_compile_local_fragment _SPECULARHIGHLIGHTS_OFF
-				Material Toggle:SetShaderProperty:_SpecularHighlights,[ToggleOff] _SpecularHighlights("Specular Highlights", Float) = 1.0
+				Material Toggle:RemoveDefine:_SPECULARHIGHLIGHTS_OFF
+				Material Toggle:SetShaderProperty:_SpecularHighlights,[ToggleOff(_SPECULARHIGHLIGHTS_OFF)] _SpecularHighlights("Specular Highlights", Float) = 1.0
 			Option:Environment Reflections:Force Off,Force On,Material Toggle:Material Toggle
-				Force On:RemoveDefine:Forward:pragma multi_compile_local_fragment _ENVIRONMENTREFLECTIONS_OFF
-				Force On:RemoveDefine:GBuffer:pragma multi_compile_local_fragment _ENVIRONMENTREFLECTIONS_OFF
+				Force On:RemoveDefine:_ENVIRONMENTREFLECTIONS_OFF
 				Force On:RemoveDefine:Forward:pragma shader_feature_local_fragment _ENVIRONMENTREFLECTIONS_OFF
 				Force On:RemoveDefine:GBuffer:pragma shader_feature_local_fragment _ENVIRONMENTREFLECTIONS_OFF
 				Force On:SetShaderProperty:_EnvironmentReflections,//[ToggleOff] _EnvironmentReflections("Environment Reflections", Float) = 1.0
 				Force Off:RemoveDefine:Forward:pragma shader_feature_local_fragment _ENVIRONMENTREFLECTIONS_OFF
 				Force Off:RemoveDefine:GBuffer:pragma shader_feature_local_fragment _ENVIRONMENTREFLECTIONS_OFF
-				Force Off:SetDefine:Forward:pragma multi_compile_local_fragment _ENVIRONMENTREFLECTIONS_OFF
-				Force Off:SetDefine:GBuffer:pragma multi_compile_local_fragment _ENVIRONMENTREFLECTIONS_OFF
+				Force Off:SetDefine:_ENVIRONMENTREFLECTIONS_OFF
 				Force Off:SetShaderProperty:_EnvironmentReflections,//[ToggleOff] _EnvironmentReflections("Environment Reflections", Float) = 1.0
 				Material Toggle:SetDefine:Forward:pragma shader_feature_local_fragment _ENVIRONMENTREFLECTIONS_OFF
 				Material Toggle:SetDefine:GBuffer:pragma shader_feature_local_fragment _ENVIRONMENTREFLECTIONS_OFF
-				Material Toggle:RemoveDefine:Forward:pragma multi_compile_local_fragment _ENVIRONMENTREFLECTIONS_OFF
-				Material Toggle:RemoveDefine:GBuffer:pragma multi_compile_local_fragment _ENVIRONMENTREFLECTIONS_OFF
+				Material Toggle:RemoveDefine:_ENVIRONMENTREFLECTIONS_OFF
 				Material Toggle:SetShaderProperty:_EnvironmentReflections,[ToggleOff] _EnvironmentReflections("Environment Reflections", Float) = 1.0
 			Option:Receive SSAO:false,true:true
 				true:SetDefine:Forward:pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
@@ -503,6 +472,10 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 		#pragma prefer_hlslcc gles
 		#pragma exclude_renderers d3d9 // ensure rendering platforms toggle list is visible
 
+		#if ( SHADER_TARGET > 35 ) && defined( SHADER_API_GLES3 )
+			#error For WebGL2/GLES3, please set your shader target to 3.5 via SubShader options. URP shaders in ASE use target 4.5 by default.
+		#endif
+
 		#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 		#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Filtering.hlsl"
 
@@ -629,8 +602,12 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 
-			#if defined(_SPECULAR_SETUP) && defined(ASE_LIGHTING_SIMPLE)
-				#define _SPECULAR_COLOR 1
+			#if defined( _SPECULAR_SETUP ) && defined( ASE_LIGHTING_SIMPLE )
+				#if defined( _SPECULARHIGHLIGHTS_OFF )
+					#undef _SPECULAR_COLOR
+				#else
+					#define _SPECULAR_COLOR
+				#endif
 			#endif
 
 			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
@@ -890,7 +867,11 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 					LODFadeCrossFade( input.positionCS );
 				#endif
 
-				return half4( Color, OutputAlpha( Alpha, isTransparent ) );
+				#if defined( ASE_OPAQUE_KEEP_ALPHA )
+					return half4( Color, Alpha );
+				#else
+					return half4( Color, OutputAlpha( Alpha, isTransparent ) );
+				#endif
 			}
 			ENDHLSL
 		}
@@ -937,8 +918,12 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 
-			#if defined(_SPECULAR_SETUP) && defined(ASE_LIGHTING_SIMPLE)
-				#define _SPECULAR_COLOR 1
+			#if defined( _SPECULAR_SETUP ) && defined( ASE_LIGHTING_SIMPLE )
+				#if defined( _SPECULARHIGHLIGHTS_OFF )
+					#undef _SPECULAR_COLOR
+				#else
+					#define _SPECULAR_COLOR
+				#endif
 			#endif
 
 			#define SHADERPASS SHADERPASS_FORWARD
@@ -964,7 +949,7 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
             #endif
 
-			#if defined(UNITY_INSTANCING_ENABLED) && ( defined(_TERRAIN_INSTANCED_PERPIXEL_NORMAL) || defined(_INSTANCEDTERRAINNORMALS_PIXEL) )
+			#if defined( UNITY_INSTANCING_ENABLED ) && defined( ASE_INSTANCED_TERRAIN ) && ( defined(_TERRAIN_INSTANCED_PERPIXEL_NORMAL) || defined(_INSTANCEDTERRAINNORMALS_PIXEL) )
 				#define ENABLE_TERRAIN_PERPIXEL_NORMAL
 			#endif
 
@@ -1508,7 +1493,11 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 					outRenderingLayers = float4( EncodeMeshRenderingLayer( renderingLayers ), 0, 0, 0 );
 				#endif
 
-				return half4( color.rgb, OutputAlpha( color.a, isTransparent ) );
+				#if defined( ASE_OPAQUE_KEEP_ALPHA )
+					return half4( color.rgb, color.a );
+				#else
+					return half4( color.rgb, OutputAlpha( color.a, isTransparent ) );
+				#endif
 			}
 			ENDHLSL
 		}
@@ -1535,8 +1524,12 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 
-			#if defined(_SPECULAR_SETUP) && defined(ASE_LIGHTING_SIMPLE)
-				#define _SPECULAR_COLOR 1
+			#if defined( _SPECULAR_SETUP ) && defined( ASE_LIGHTING_SIMPLE )
+				#if defined( _SPECULARHIGHLIGHTS_OFF )
+					#undef _SPECULAR_COLOR
+				#else
+					#define _SPECULAR_COLOR
+				#endif
 			#endif
 
 			#define SHADERPASS SHADERPASS_SHADOWCASTER
@@ -1822,8 +1815,12 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 
-			#if defined(_SPECULAR_SETUP) && defined(ASE_LIGHTING_SIMPLE)
-				#define _SPECULAR_COLOR 1
+			#if defined( _SPECULAR_SETUP ) && defined( ASE_LIGHTING_SIMPLE )
+				#if defined( _SPECULARHIGHLIGHTS_OFF )
+					#undef _SPECULAR_COLOR
+				#else
+					#define _SPECULAR_COLOR
+				#endif
 			#endif
 
 			#define SHADERPASS SHADERPASS_DEPTHONLY
@@ -2089,8 +2086,12 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 
-			#if defined(_SPECULAR_SETUP) && defined(ASE_LIGHTING_SIMPLE)
-				#define _SPECULAR_COLOR 1
+			#if defined( _SPECULAR_SETUP ) && defined( ASE_LIGHTING_SIMPLE )
+				#if defined( _SPECULARHIGHLIGHTS_OFF )
+					#undef _SPECULAR_COLOR
+				#else
+					#define _SPECULAR_COLOR
+				#endif
 			#endif
 
 			#define SHADERPASS SHADERPASS_META
@@ -2115,7 +2116,7 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 				float4 positionOS : POSITION;
 				half3 normalOS : NORMAL;
 				half4 tangentOS : TANGENT;
-				float4 texcoord0 : TEXCOORD0;
+				float4 texcoord : TEXCOORD0;
 				float4 texcoord1 : TEXCOORD1;
 				float4 texcoord2 : TEXCOORD2;
 				/*ase_vdata:p=p;n=n;t=t;uv0=tc0;uv1=tc1;uv2=tc2*/
@@ -2199,7 +2200,7 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 				#ifdef EDITOR_VISUALIZATION
 					float2 VizUV = 0;
 					float4 LightCoord = 0;
-					UnityEditorVizData(input.positionOS.xyz, input.texcoord0.xy, input.texcoord1.xy, input.texcoord2.xy, VizUV, LightCoord);
+					UnityEditorVizData(input.positionOS.xyz, input.texcoord.xy, input.texcoord1.xy, input.texcoord2.xy, VizUV, LightCoord);
 					output.VizUV = float4(VizUV, 0, 0);
 					output.LightCoord = LightCoord;
 				#endif
@@ -2215,6 +2216,9 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 				float4 positionOS : INTERNALTESSPOS;
 				half3 normalOS : NORMAL;
 				half4 tangentOS : TANGENT;
+				float4 texcoord : TEXCOORD0;
+				float4 texcoord1 : TEXCOORD1;
+				float4 texcoord2 : TEXCOORD2;
 				/*ase_vcontrol*/
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
@@ -2233,6 +2237,9 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 				output.positionOS = input.positionOS;
 				output.normalOS = input.normalOS;
 				output.tangentOS = input.tangentOS;
+				output.texcoord = input.texcoord;
+				output.texcoord1 = input.texcoord1;
+				output.texcoord2 = input.texcoord2;
 				/*ase_control_code:input=Attributes;output=VertexControl*/
 				return output;
 			}
@@ -2273,6 +2280,9 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 				output.positionOS = patch[0].positionOS * bary.x + patch[1].positionOS * bary.y + patch[2].positionOS * bary.z;
 				output.normalOS = patch[0].normalOS * bary.x + patch[1].normalOS * bary.y + patch[2].normalOS * bary.z;
 				output.tangentOS = patch[0].tangentOS * bary.x + patch[1].tangentOS * bary.y + patch[2].tangentOS * bary.z;
+				output.texcoord = patch[0].texcoord * bary.x + patch[1].texcoord * bary.y + patch[2].texcoord * bary.z;
+				output.texcoord1 = patch[0].texcoord1 * bary.x + patch[1].texcoord1 * bary.y + patch[2].texcoord1 * bary.z;
+				output.texcoord2 = patch[0].texcoord2 * bary.x + patch[1].texcoord2 * bary.y + patch[2].texcoord2 * bary.z;
 				/*ase_domain_code:patch=VertexControl;output=Attributes;bary=SV_DomainLocation*/
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
@@ -2351,8 +2361,12 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 
-			#if defined(_SPECULAR_SETUP) && defined(ASE_LIGHTING_SIMPLE)
-				#define _SPECULAR_COLOR 1
+			#if defined( _SPECULAR_SETUP ) && defined( ASE_LIGHTING_SIMPLE )
+				#if defined( _SPECULARHIGHLIGHTS_OFF )
+					#undef _SPECULAR_COLOR
+				#else
+					#define _SPECULAR_COLOR
+				#endif
 			#endif
 
 			#define SHADERPASS SHADERPASS_2D
@@ -2591,8 +2605,12 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 
-			#if defined(_SPECULAR_SETUP) && defined(ASE_LIGHTING_SIMPLE)
-				#define _SPECULAR_COLOR 1
+			#if defined( _SPECULAR_SETUP ) && defined( ASE_LIGHTING_SIMPLE )
+				#if defined( _SPECULARHIGHLIGHTS_OFF )
+					#undef _SPECULAR_COLOR
+				#else
+					#define _SPECULAR_COLOR
+				#endif
 			#endif
 
 			#define SHADERPASS SHADERPASS_DEPTHNORMALSONLY
@@ -2616,7 +2634,7 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
             #endif
 
-			#if defined(UNITY_INSTANCING_ENABLED) && ( defined(_TERRAIN_INSTANCED_PERPIXEL_NORMAL) || defined(_INSTANCEDTERRAINNORMALS_PIXEL) )
+			#if defined( UNITY_INSTANCING_ENABLED ) && defined( ASE_INSTANCED_TERRAIN ) && ( defined(_TERRAIN_INSTANCED_PERPIXEL_NORMAL) || defined(_INSTANCEDTERRAINNORMALS_PIXEL) )
 				#define ENABLE_TERRAIN_PERPIXEL_NORMAL
 			#endif
 
@@ -2919,7 +2937,14 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 
 			HLSLPROGRAM
 
+			// Deferred Rendering Path does not support the OpenGL-based graphics API:
+			// Desktop OpenGL, OpenGL ES 3.0, WebGL 2.0.
+			#pragma exclude_renderers gles3 glcore
+
 			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+			#if ( UNITY_VERSION >= 60000058 )
+			#pragma multi_compile _ EVALUATE_SH_MIXED EVALUATE_SH_VERTEX
+			#endif
 			#pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
 			#pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
 			#pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
@@ -2938,8 +2963,12 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 
-			#if defined(_SPECULAR_SETUP) && defined(ASE_LIGHTING_SIMPLE)
-				#define _SPECULAR_COLOR 1
+			#if defined( _SPECULAR_SETUP ) && defined( ASE_LIGHTING_SIMPLE )
+				#if defined( _SPECULARHIGHLIGHTS_OFF )
+					#undef _SPECULAR_COLOR
+				#else
+					#define _SPECULAR_COLOR
+				#endif
 			#endif
 
 			#define SHADERPASS SHADERPASS_GBUFFER
@@ -2965,7 +2994,7 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
             #endif
 
-			#if defined(UNITY_INSTANCING_ENABLED) && ( defined(_TERRAIN_INSTANCED_PERPIXEL_NORMAL) || defined(_INSTANCEDTERRAINNORMALS_PIXEL) )
+			#if defined( UNITY_INSTANCING_ENABLED ) && defined( ASE_INSTANCED_TERRAIN ) && ( defined(_TERRAIN_INSTANCED_PERPIXEL_NORMAL) || defined(_INSTANCEDTERRAINNORMALS_PIXEL) )
 				#define ENABLE_TERRAIN_PERPIXEL_NORMAL
 			#endif
 
@@ -3402,8 +3431,12 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 
-			#if defined(_SPECULAR_SETUP) && defined(ASE_LIGHTING_SIMPLE)
-				#define _SPECULAR_COLOR 1
+			#if defined( _SPECULAR_SETUP ) && defined( ASE_LIGHTING_SIMPLE )
+				#if defined( _SPECULARHIGHLIGHTS_OFF )
+					#undef _SPECULAR_COLOR
+				#else
+					#define _SPECULAR_COLOR
+				#endif
 			#endif
 
 			#define SCENESELECTIONPASS 1
@@ -3632,12 +3665,8 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 					float DeviceDepth = /*ase_frag_out:Depth;Float;17;-1;_DepthValue*/input.positionCS.z/*end*/;
 				#endif
 
-				#if _ALPHATEST_ON
-					float alphaClipThreshold = 0.01f;
-					#if ALPHA_CLIP_THRESHOLD
-						alphaClipThreshold = surfaceDescription.AlphaClipThreshold;
-					#endif
-					clip(surfaceDescription.Alpha - alphaClipThreshold);
+				#ifdef _ALPHATEST_ON
+					clip(surfaceDescription.Alpha - surfaceDescription.AlphaClipThreshold);
 				#endif
 
 				#if defined( ASE_DEPTH_WRITE_ON )
@@ -3667,8 +3696,12 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 
-			#if defined(_SPECULAR_SETUP) && defined(ASE_LIGHTING_SIMPLE)
-				#define _SPECULAR_COLOR 1
+			#if defined( _SPECULAR_SETUP ) && defined( ASE_LIGHTING_SIMPLE )
+				#if defined( _SPECULARHIGHLIGHTS_OFF )
+					#undef _SPECULAR_COLOR
+				#else
+					#define _SPECULAR_COLOR
+				#endif
 			#endif
 
 		    #define SCENEPICKINGPASS 1
@@ -3897,19 +3930,15 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 					float DeviceDepth = /*ase_frag_out:Depth;Float;17;-1;_DepthValue*/input.positionCS.z/*end*/;
 				#endif
 
-				#if _ALPHATEST_ON
-					float alphaClipThreshold = 0.01f;
-					#if ALPHA_CLIP_THRESHOLD
-						alphaClipThreshold = surfaceDescription.AlphaClipThreshold;
-					#endif
-						clip(surfaceDescription.Alpha - alphaClipThreshold);
+				#ifdef _ALPHATEST_ON
+					clip(surfaceDescription.Alpha - surfaceDescription.AlphaClipThreshold);
 				#endif
 
 				#if defined( ASE_DEPTH_WRITE_ON )
 					outputDepth = DeviceDepth;
 				#endif
 
-				return _SelectionID;
+				return unity_SelectionID;
 			}
 			ENDHLSL
 		}
@@ -3931,8 +3960,12 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 
-			#if defined(_SPECULAR_SETUP) && defined(ASE_LIGHTING_SIMPLE)
-				#define _SPECULAR_COLOR 1
+			#if defined( _SPECULAR_SETUP ) && defined( ASE_LIGHTING_SIMPLE )
+				#if defined( _SPECULARHIGHLIGHTS_OFF )
+					#undef _SPECULAR_COLOR
+				#else
+					#define _SPECULAR_COLOR
+				#endif
 			#endif
 
             #define SHADERPASS SHADERPASS_MOTION_VECTORS
@@ -4157,8 +4190,12 @@ Shader /*ase_name*/ "Hidden/Universal/Lit" /*end*/
 
 			#define APLICATION_SPACE_WARP_MOTION 1
 
-			#if defined(_SPECULAR_SETUP) && defined(ASE_LIGHTING_SIMPLE)
-				#define _SPECULAR_COLOR 1
+			#if defined( _SPECULAR_SETUP ) && defined( ASE_LIGHTING_SIMPLE )
+				#if defined( _SPECULARHIGHLIGHTS_OFF )
+					#undef _SPECULAR_COLOR
+				#else
+					#define _SPECULAR_COLOR
+				#endif
 			#endif
 
             #define SHADERPASS SHADERPASS_MOTION_VECTORS

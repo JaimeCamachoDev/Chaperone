@@ -2388,6 +2388,7 @@ namespace AmplifyShaderEditor
 		public List<string> InterpolatorList { get { return m_interpolatorsList; } }
 		public List<string> VertexInterpDeclList { get { return m_vertexInterpDeclList; } }
 		public TemplateDataCollector TemplateDataCollectorInstance { get { return m_templateDataCollector; } }
+		public MasterNode MasterNode { get { return m_masterNode; } }
 		public RenderPath CurrentRenderPath
 		{
 			get { return m_renderPath; }

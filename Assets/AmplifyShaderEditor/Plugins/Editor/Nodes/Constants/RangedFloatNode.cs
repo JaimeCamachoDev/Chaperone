@@ -73,6 +73,7 @@ namespace AmplifyShaderEditor
 
 		public override void OnDirtyProperty()
 		{
+			base.OnDirtyProperty();
 			UIUtils.UpdateFloatIntDataNode( UniqueId, PropertyInspectorName );
 		}
 

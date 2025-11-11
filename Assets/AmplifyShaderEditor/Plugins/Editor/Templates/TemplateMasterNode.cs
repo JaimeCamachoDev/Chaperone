@@ -112,10 +112,10 @@ namespace AmplifyShaderEditor
 
 		void FetchCurrentTemplate()
 		{
-			m_currentTemplate = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( m_templateGUID ) as TemplateData;
+			m_currentTemplate = TemplatesManager.Instance.GetTemplate( m_templateGUID ) as TemplateData;
 			if( m_currentTemplate == null )
 			{
-				m_currentTemplate = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( m_templateName ) as TemplateData;
+				m_currentTemplate = TemplatesManager.Instance.GetTemplate( m_templateName ) as TemplateData;
 			}
 
 			if( m_currentTemplate != null )
@@ -148,7 +148,7 @@ namespace AmplifyShaderEditor
 		{
 			FetchCurrentTemplate();
 
-			int templateCount = m_containerGraph.ParentWindow.TemplatesManagerInstance.TemplateCount;
+			int templateCount = TemplatesManager.Instance.TemplateCount;
 			m_availableCategories = new MasterNodeCategoriesData[ templateCount + 1 ];
 			m_availableCategoryLabels = new GUIContent[ templateCount + 1 ];
 
@@ -162,7 +162,7 @@ namespace AmplifyShaderEditor
 			for( int i = 0; i < templateCount; i++ )
 			{
 				int idx = i + 1;
-				TemplateData templateData = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( i ) as TemplateData;
+				TemplateData templateData = TemplatesManager.Instance.GetTemplate( i ) as TemplateData;
 
 				if( m_currentTemplate != null && m_currentTemplate.GUID.Equals( templateData.GUID ) )
 					m_masterNodeCategory = idx;
@@ -174,11 +174,11 @@ namespace AmplifyShaderEditor
 
 		void SetCategoryIdxFromTemplate()
 		{
-			int templateCount = m_containerGraph.ParentWindow.TemplatesManagerInstance.TemplateCount;
+			int templateCount = TemplatesManager.Instance.TemplateCount;
 			for( int i = 0; i < templateCount; i++ )
 			{
 				int idx = i + 1;
-				TemplateData templateData = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( i ) as TemplateData;
+				TemplateData templateData = TemplatesManager.Instance.GetTemplate( i ) as TemplateData;
 				if( templateData != null && m_currentTemplate != null && m_currentTemplate.GUID.Equals( templateData.GUID ) )
 					m_masterNodeCategory = idx;
 			}
@@ -361,7 +361,7 @@ namespace AmplifyShaderEditor
 						m_currentDataCollector.ClearVertexLocalVariables();
 					}
 
-					// fill functions 
+					// fill functions
 					for( int j = 0; j < m_currentDataCollector.InstructionsList.Count; j++ )
 					{
 						fragmentInstructions.Add( m_currentDataCollector.InstructionsList[ j ].PropertyName );
@@ -451,7 +451,7 @@ namespace AmplifyShaderEditor
 			}
 			m_containerGraph.CheckPropertiesAutoRegister( ref m_currentDataCollector );
 
-			//Sort ports by both 
+			//Sort ports by both
 			List<InputPort> fragmentPorts = new List<InputPort>();
 			List<InputPort> vertexPorts = new List<InputPort>();
 			SortInputPorts( ref vertexPorts, ref fragmentPorts );
@@ -599,14 +599,14 @@ namespace AmplifyShaderEditor
 					templateShaderName = GetCurrentParam( ref nodeParams );
 				}
 
-				TemplateData template = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( templateGUID ) as TemplateData;
+				TemplateData template = TemplatesManager.Instance.GetTemplate( templateGUID ) as TemplateData;
 				if( template != null )
 				{
 					SetTemplate( template, false, true );
 				}
 				else
 				{
-					template = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplateByName( templateShaderName ) as TemplateData;
+					template = TemplatesManager.Instance.GetTemplateByName( templateShaderName ) as TemplateData;
 					if( template != null )
 					{
 						SetTemplate( template, false, true );

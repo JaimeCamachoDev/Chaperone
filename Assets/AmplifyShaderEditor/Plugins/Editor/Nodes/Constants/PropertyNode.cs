@@ -47,6 +47,7 @@ namespace AmplifyShaderEditor
 		private const string TooltipFormatter = "{0}\n\nName: {1}\nValue: {2}";
 		private const string InvalidAttributeFormatter = "Attribute {0} not found on node {1}. Please click on this message to select node and review its attributes section";
 		protected string GlobalTypeWarningText = "Global variables must be set via a C# script using the Shader.SetGlobal{0}(...) method.\nPlease note that setting a global variable will affect all shaders which are using it.";
+		private const string PrecisionDisabledWarningText = "Precision cannot be changed because a matching internal property is already defined as global uniform in the template.";
 		private const string HybridInstancedStr = "Hybrid Instanced";
 		private const string AutoRegisterStr = "Auto-Register";
 		private const string IgnoreVarDeclarationStr = "Variable Mode";
@@ -86,6 +87,7 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		protected string m_precisionString;
 		protected bool m_drawPrecisionUI = true;
+		protected bool m_disablePrecisionUI = false;
 
 		[SerializeField]
 		private int m_orderIndex = -1;
@@ -759,6 +761,7 @@ namespace AmplifyShaderEditor
 		}
 		public virtual void DrawMainPropertyBlock()
 		{
+			EditorGUI.BeginChangeCheck();
 			EditorGUILayout.BeginVertical();
 			{
 				if( m_freeType )
@@ -808,6 +811,10 @@ namespace AmplifyShaderEditor
 				}
 			}
 			EditorGUILayout.EndVertical();
+			if ( EditorGUI.EndChangeCheck() )
+			{
+				OnDirtyProperty();
+			}
 		}
 
 		public void DrawMainPropertyBlockNoPrecision()
@@ -890,7 +897,7 @@ namespace AmplifyShaderEditor
 			if( m_drawPrecisionUI )
 			{
 				bool guiEnabled = GUI.enabled;
-				GUI.enabled = m_currentParameterType == PropertyType.Constant || m_variableMode == VariableMode.Create;
+				GUI.enabled = ( m_currentParameterType == PropertyType.Constant || m_variableMode == VariableMode.Create ) && !m_disablePrecisionUI;
 				EditorGUI.BeginChangeCheck();
 				DrawPrecisionProperty();
 				if( EditorGUI.EndChangeCheck() )
@@ -898,6 +905,10 @@ namespace AmplifyShaderEditor
 
 				GUI.enabled = guiEnabled;
 
+				if ( m_disablePrecisionUI )
+				{
+					EditorGUILayout.HelpBox( PrecisionDisabledWarningText, MessageType.Warning );
+				}
 			}
 		}
 
@@ -1486,7 +1497,28 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public virtual void OnDirtyProperty() { }
+		public virtual void OnDirtyProperty()
+		{
+			// @diogo: Look for an existing global property hard coded into the template. If found,
+			//         disable precision control and force a precision type matching the template.
+
+			m_disablePrecisionUI = false;
+
+			if ( m_currentParameterType != PropertyType.Constant )
+			{
+				var templateMasterNode = ContainerGraph.CurrentMasterNode as TemplateMultiPassMasterNode;
+				if ( templateMasterNode != null && templateMasterNode.CurrentTemplate != null )
+				{
+					var data = templateMasterNode.CurrentTemplate.GetGlobalShaderPropertyData( m_propertyName );
+					if ( data != null )
+					{
+						m_currentPrecisionType = data.PrecisionType;
+						m_disablePrecisionUI = true;
+					}
+				}
+			}
+		}
+
 		public virtual void OnPropertyNameChanged() { UIUtils.UpdatePropertyDataNode( UniqueId, PropertyInspectorName ); }
 		public virtual void DrawSubProperties() { }
 		public virtual void DrawMaterialProperties() { }

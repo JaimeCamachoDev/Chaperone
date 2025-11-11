@@ -46,6 +46,11 @@ namespace AmplifyShaderEditor
 		{
 			AmplifyShaderEditorWindow.CreateConfirmationTemplateShader( "899e609c083c74c4ca567477c39edef0" );
 		}
+		[MenuItem( "Assets/Create/Amplify Shader/Built-In/Wireframe", false, 85 )]
+		public static void ApplyTemplateBuiltInWireframe()
+		{
+			AmplifyShaderEditorWindow.CreateConfirmationTemplateShader( "45bf09b07249a46489d5200e9ba4d9f1" );
+		}
 		[MenuItem( "Assets/Create/Amplify Shader/Custom Render Texture/Initialize", false, 85 )]
 		public static void ApplyTemplateCustomRenderTextureInitialize()
 		{

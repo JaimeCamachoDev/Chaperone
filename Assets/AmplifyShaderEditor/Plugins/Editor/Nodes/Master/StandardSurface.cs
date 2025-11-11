@@ -2635,9 +2635,9 @@ namespace AmplifyShaderEditor
 				{
 					ShaderBody += m_fallbackHelper.TabbedFallbackShader;
 				}
-				else if( m_castShadows || m_receiveShadows )
+				else
 				{
-					AddShaderProperty( ref ShaderBody, "Fallback", "Diffuse" );
+					ShaderBody += m_fallbackHelper.TabbedFallbackShaderOff;
 				}
 
 				if( !string.IsNullOrEmpty( m_customInspectorName ) )

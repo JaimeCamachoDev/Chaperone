@@ -1,3 +1,97 @@
+v1.9.9.5
+
+   Editor
+      * Added preview support for Unity 6.3 (Per Unity 6.3.0b6)
+      * Added "switch2" platform to be used in shaders built in Unity 6.0+
+      * Added "webgpu" platform to be used in shaders built in Unity 6.0+
+      * Improved template manager loading speed and add/remove templates (#503)
+      * Improved "Additional Directives" filter: allow comma separator, trim spaces (#497)
+      * Changed Default Surface Shader Fallback to Off instead of "Diffuse"
+      * Changed preferences ForceTemplateMinShaderModel to false by default
+      * Changed _AlphaCutoff/_AlphaCutoffShadow property added to shaders in HDRP
+      * Fixed Normalize node returning NaN in preview when using Safe mode (#510)
+      * Fixed and improved both Fallback shader selection UsePass selection
+      * Fixed "Integer" property generating exception errors on shader inspector (#504)
+      * Fixed default/null texture in "Texture Object" and "Texture Sample" node previews
+      * Fixed template menu items not updating properly on Editor open
+      * Fixed UsePass not added when Picking/Selection passes are disabled (#488)
+      * Fixed Instanced Property Bug (#340)
+      * Fixed wire dot/relay for SS path not working (#30)
+      * Fixed SetLinkedModuleData (directives) called more than once, same linked node
+
+   Templates
+      * Added "Material Toggle" enum option to "Receive Shadows" option in URP/Unlit
+      * Restored Distortion pass to "HDRP/Lit" template(#458)
+      * Restored Vertex Offset support to "HDRP/Decal" template (#505)
+      * Removed "Material Toggle" state from "Receive Shadows" option in URP 10x
+      * Fixed alpha clipping in SceneSelectionPass and ScenePickingPass (URP)
+      * Fixed RefractionIndex errors on HDRP templates when using refraction
+      * Fixed URP Simple Lit Specular Highlights Toggle (#502)
+      * Fixed HDRP 10x _MATERIAL_AFFECTS_MASKMAP keyword pragma mismatch
+      * Fixed precision mismatch using property names already as globals in template
+      * Fixes to URP and HDRP terrain instancing
+      * Fixed Tesselation broken with instanced terrain BIRP (#434)
+      * Fixed Picking pass not working when using Instanced Terrain (#488)
+      * Fixed Inverted Fog build target to Android (#501)
+      * Fixed BIRP/URP/HDRP Lit template _INSTANCEDTERRAINNORMALS_PIXEL (#493)
+      * Fixed URP 10x undeclared identifier 'InitializeInputDataFog' (#487)
+      * Fixed "Built-In Fog" toggle not disabling fog (#500)
+      * Fixing variant matching issues for BIRP/Lit (#494)
+
+   Nodes
+      * Updated SRP Additional Light to support 17.3
+      * Fixed "Triplanar Sample" node generating _ST inside function instead of argument
+      * Fixed "Triplanar Sample" node not resolving tex obj through register/get var (#508)
+      * Fixed Triplanar Sample Node - SRP Batcher (#506)
+      * Fixed "Normalize" node preview to work with Safe Normalize (#510)
+
+v1.9.9.4
+
+   Editor
+      * Raised minimum supported Unity version to 2019.4.40
+      * Added selection/filter toggles to dependency list in "Shader Function" inspector
+      * Added gray "PREVIEW DISABLED" text to replace empty/black no preview texture
+      * Added "Preview Quality" user preferences option to lower VRAM usage
+      * Reduced default preview quality to "Medium" aka 64x64
+      * Changing to a different template now also tries to match connections via link ID
+      * Changed "Preview Disabled" text to dark gray instead of bright red
+      * Changed Surface shaders to also use uint SV_IsFrontFace (#451)
+      * Changed "Instanced Terrain" option to generate ASE_INSTANCED_TERRAIN define
+      * Fixed input port preview textures allocated even when disabled via preferences
+      * Fixed maximum interpolators for shader targets 3.5 and above (15)
+      * Fixed Start Screen interfering with Unity batch mode
+      * Fixed alignment issues with screen shot shooter gizmo (#439)
+      * Fixed BillboardOpHelper causing shader compile warnings and errors (#464)
+      * Fixed Play then Stop breaks node preview + zoom lag (#469)
+      * Fixed "Instanced Terrain" option adding duplicate Picking/Selection passes (#470)
+      * Fixed template Option defaulting when InvertActionOnDeselection added (#470)
+
+   Templates
+      * Added new template "Built-In/Wireframe"
+      * Added new Impostor category to "Built-In/Lit" with improved option logic
+      * Added proper Selection and Picking passes to "Built-In/Lit" template
+      * Added Opaque "Keep Alpha" option to URP Lit and Unlit templates
+      * Updated URP/HDRP template packages 10x to 17.2 (#459, #460, #462, #468)
+      * Fixed "Indirect Diffuse Light" duplicating pragmas when using "Built-In/Lit" (#435)
+      * Fixed "Built-In/Lit" Lambert and BlinnPhong workflows visible/usable ports
+      * Fixed port number inconsistency between passes in "Built-In/Lit" template
+      * Fixed URP 2D templates throwing errors on SRP versions below 14.0.7 (14x)
+      * Fixed URP Decal template (12x)
+      * Fixed URP Decal template throwing errors on macOS (14x)
+      * Fixed decal templates raising errors when using LOD Crossfade (URP 15 to 17x)
+
+   Nodes
+      * Fixed vector cast bug in "Texture Coordinates" node (#453)
+      * Changed "Depth Fade" default Mirror value to false
+      * Added "NaN" value node for culling vertices
+
+   Samples
+      * Added samples for Unity 6.1 (17.1) and Unity 6.2 (17.2)
+      * Fixed URP Omni Decal sample by disabling Alpha Clipping
+      * Added URP "Universal Asset" for sample Render Pipeline config
+      * Added HDRP "HD Asset" for sample Render Pipeline config
+      * Updated all BiRP, URP and HDRP sample shaders
+
 v1.9.9.3
 
    Editor

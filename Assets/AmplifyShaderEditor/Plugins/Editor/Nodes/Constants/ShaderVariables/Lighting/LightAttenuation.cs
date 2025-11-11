@@ -96,7 +96,7 @@ namespace AmplifyShaderEditor
 								pragmas.Add( "multi_compile _ _FORWARD_PLUS" );
 							}
 						}
-						else if ( ASEPackageManagerHelper.CurrentURPBaseline >= ASESRPBaseline.ASE_SRP_14_0 )
+						else if ( ASEPackageManagerHelper.CurrentURPBaseline >= ASESRPBaseline.ASE_SRP_14_X )
 						{
 							if ( isForward || isGBuffer )
 							{
@@ -111,7 +111,7 @@ namespace AmplifyShaderEditor
 								pragmas.Add( "multi_compile _ _FORWARD_PLUS" );
 							}
 						}
-						else if ( ASEPackageManagerHelper.CurrentURPBaseline >= ASESRPBaseline.ASE_SRP_12_0 )
+						else if ( ASEPackageManagerHelper.CurrentURPBaseline >= ASESRPBaseline.ASE_SRP_12_X )
 						{
 							if ( isForward || isGBuffer )
 							{
@@ -125,7 +125,7 @@ namespace AmplifyShaderEditor
 								pragmas.Add( "multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS" );
 							}
 						}
-						else if ( ASEPackageManagerHelper.CurrentURPBaseline >= ASESRPBaseline.ASE_SRP_11_0 )
+						else if ( ASEPackageManagerHelper.CurrentURPBaseline >= ASESRPBaseline.ASE_SRP_11_X )
 						{
 							if ( isForward || isGBuffer )
 							{

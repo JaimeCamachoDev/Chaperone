@@ -636,7 +636,7 @@ namespace AmplifyShaderEditor
 											currentOption.Setup = AseOptionItemSetupDict[ optionItemSetup[ 1 ] ];
 									}
 
-									currentOption.Id = itemIds.Length > 1 ? itemIds[ 1 ] : optionItems[ 1 ];
+									currentOption.Id = itemIds.Length > 1 ? itemIds[ 1 ] : currentOption.Name;
 									currentOption.DisplayOptions = optionItems[ 2 ].Split( OptionsDataSeparator );
 									currentOption.DisableIdx = currentOption.DisplayOptions.Length;
 									optionItems[ 2 ] += ",disable";

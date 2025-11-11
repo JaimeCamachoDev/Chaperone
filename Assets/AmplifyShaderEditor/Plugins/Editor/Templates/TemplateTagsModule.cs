@@ -438,6 +438,18 @@ namespace AmplifyShaderEditor
 
 		public List<CustomTagData> AvailableTags { get { return m_availableTags; } }
 
+		public bool HasTag( string tagName, string tagValue = "" )
+		{
+			foreach ( var tag in m_availableTags )
+			{
+				if ( tag.TagName.Equals( tagName ) )
+				{
+					return string.IsNullOrEmpty( tagValue ) ? true : tag.TagValue.Equals( tagValue );
+				}
+			}
+			return false;
+		}
+
 		public bool HasRenderInfo( ref RenderType renderType, ref RenderQueue renderQueue )
 		{
 			if( !m_validData )

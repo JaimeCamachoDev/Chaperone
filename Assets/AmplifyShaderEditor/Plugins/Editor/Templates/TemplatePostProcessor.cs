@@ -4,6 +4,7 @@
 using UnityEditor;
 using UnityEngine;
 using System.IO;
+using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
@@ -13,17 +14,6 @@ namespace AmplifyShaderEditor
 {
 	public sealed class TemplatePostProcessor : AssetPostprocessor
 	{
-		public static TemplatesManager DummyManager;
-		public static void Destroy()
-		{
-			if( DummyManager != null )
-			{
-				DummyManager.Destroy();
-				ScriptableObject.DestroyImmediate( DummyManager );
-				DummyManager = null;
-			}
-		}
-
 		static void OnPostprocessAllAssets( string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths )
 		{
 			if ( Application.isBatchMode )
@@ -35,47 +25,10 @@ namespace AmplifyShaderEditor
 			ASEPackageManagerHelper.RequestInfo();
 			ASEPackageManagerHelper.Update();
 
-			bool containsShaders = false;
-			for( int i = 0; i < importedAssets.Length; i++ )
-			{
-				if( importedAssets[ i ].EndsWith( ".shader" ) )
-				{
-					containsShaders = true;
-					break;
-				}
-			}
-
 			// leave early if there's no shaders among the imports
-			if( !containsShaders )
+			bool containsShaders = importedAssets.Any( a => a.EndsWith( ".shader" ) ) || deletedAssets.Any( a => a.EndsWith( ".shader" ) );
+			if ( !containsShaders )
 				return;
-
-			TemplatesManager templatesManager;
-			bool firstTimeDummyFlag = false;
-			if( UIUtils.CurrentWindow == null )
-			{
-				if( DummyManager == null )
-				{
-					DummyManager = ScriptableObject.CreateInstance<TemplatesManager>();
-					DummyManager.hideFlags = HideFlags.HideAndDontSave;
-					firstTimeDummyFlag = true;
-				}
-				templatesManager = DummyManager;
-			}
-			else
-			{
-				Destroy();
-				templatesManager = UIUtils.CurrentWindow.TemplatesManagerInstance;
-			}
-
-			if( templatesManager == null )
-			{
-				return;
-			}
-
-			if( !templatesManager.Initialized )
-			{
-				templatesManager.Init();
-			}
 
 			bool refreshMenuItems = false;
 			for( int i = 0; i < importedAssets.Length; i++ )
@@ -83,10 +36,10 @@ namespace AmplifyShaderEditor
 				if( TemplateHelperFunctions.CheckIfTemplate( importedAssets[ i ] ) )
 				{
 					string guid = AssetDatabase.AssetPathToGUID( importedAssets[ i ] );
-					TemplateDataParent templateData = templatesManager.GetTemplate( guid );
+					TemplateDataParent templateData = TemplatesManager.Instance.GetTemplate( guid );
 					if( templateData != null )
 					{
-						refreshMenuItems = templateData.Reload() || refreshMenuItems || firstTimeDummyFlag;
+						refreshMenuItems = templateData.Reload() || refreshMenuItems;
 						int windowCount = IOUtils.AllOpenedWindows.Count;
 						AmplifyShaderEditorWindow currWindow = UIUtils.CurrentWindow;
 						for( int windowIdx = 0; windowIdx < windowCount; windowIdx++ )
@@ -108,7 +61,7 @@ namespace AmplifyShaderEditor
 						string name = TemplatesManager.OfficialTemplates.ContainsKey( guid ) ? TemplatesManager.OfficialTemplates[ guid ] : string.Empty;
 						TemplateMultiPass mp = TemplateMultiPass.CreateInstance<TemplateMultiPass>();
 						mp.Init( name, guid, AssetDatabase.GUIDToAssetPath( guid ), true );
-						templatesManager.AddTemplate( mp );
+						TemplatesManager.Instance.AddTemplate( mp );
 					}
 				}
 			}
@@ -120,7 +73,7 @@ namespace AmplifyShaderEditor
 					for( int i = 0; i < deletedAssets.Length; i++ )
 					{
 						string guid = AssetDatabase.AssetPathToGUID( deletedAssets[ i ] );
-						TemplateDataParent templateData = templatesManager.GetTemplate( guid );
+						TemplateDataParent templateData = TemplatesManager.Instance.GetTemplate( guid );
 						if( templateData != null )
 						{
 							// Close any window using that template
@@ -134,36 +87,17 @@ namespace AmplifyShaderEditor
 								}
 							}
 
-							templatesManager.RemoveTemplate( templateData );
+							TemplatesManager.Instance.RemoveTemplate( templateData );
 							refreshMenuItems = true;
 						}
 					}
 				}
 			}
 
-			//for ( int i = 0; i < movedAssets.Length; i++ )
-			//{
-			//	if ( TemplateHelperFunctions.CheckIfTemplate( movedAssets[ i ] ) )
-			//	{
-			//		refreshMenuItems = true;
-			//		break;
-			//	}
-			//}
-
-			//for ( int i = 0; i < movedFromAssetPaths.Length; i++ )
-			//{
-			//	if ( TemplateHelperFunctions.CheckIfTemplate( movedFromAssetPaths[ i ] ) )
-			//	{
-			//		refreshMenuItems = true;
-			//		break;
-			//	}
-			//}
-
 			if( refreshMenuItems )
 			{
-				//UnityEngine.Debug.Log( "Refresh Menu Items" );
 				refreshMenuItems = false;
-				templatesManager.CreateTemplateMenuItems();
+				TemplatesManager.Instance.CreateTemplateMenuItems();
 
 				AmplifyShaderEditorWindow currWindow = UIUtils.CurrentWindow;
 
@@ -177,10 +111,7 @@ namespace AmplifyShaderEditor
 			}
 
 			// reimport menu items at the end of everything, hopefully preventing import loops
-			templatesManager.ReimportMenuItems();
-
-			// destroying the DummyManager, not doing so will create leaks over time
-			Destroy();
+			TemplatesManager.Instance.ReimportMenuItems();
 		}
 	}
 }

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: f42c2bc4dab4723429b0d30b635c3035
+guid: 5a07a5a188dd6fa42a63eb43dac1ad38
 DefaultImporter:
   externalObjects: {}
   userData: 
@@ -9,6 +9,6 @@ AssetOrigin:
   serializedVersion: 1
   productId: 68570
   packageName: Amplify Shader Editor
-  packageVersion: 1.9.9.3
-  assetPath: Assets/AmplifyShaderEditor/Examples/HDRP Samples 17x.unitypackage
-  uploadId: 778843
+  packageVersion: 1.9.9.5
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/Templates/HDRP 17.3.unitypackage
+  uploadId: 808914

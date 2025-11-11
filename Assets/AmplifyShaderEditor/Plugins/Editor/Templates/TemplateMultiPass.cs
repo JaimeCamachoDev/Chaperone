@@ -74,6 +74,9 @@ namespace AmplifyShaderEditor
 		[NonSerialized]
 		private List<TemplateShaderPropertyData> m_allShaderProperties;
 
+		[NonSerialized]
+		private Dictionary<string,TemplateShaderPropertyData> m_globalShaderProperties;
+
 		public TemplateMultiPass()
 		{
 			m_templateType = TemplateDataType.MultiPass;
@@ -347,6 +350,11 @@ namespace AmplifyShaderEditor
 			{
 				m_allShaderProperties.Clear();
 				m_allShaderProperties = null;
+			}
+			if( m_globalShaderProperties != null )
+			{
+				m_globalShaderProperties.Clear();
+				m_globalShaderProperties = null;
 			}
 
 			int subShaderCount = m_subShaders.Count;
@@ -1444,6 +1452,34 @@ namespace AmplifyShaderEditor
 		public TemplateShaderPropertyData GetShaderPropertyData( string propertyName )
 		{
 			return m_availableShaderProperties.Find( ( x ) => ( x.PropertyName.Equals( propertyName ) ) );
+		}
+
+		public TemplateShaderPropertyData GetGlobalShaderPropertyData( string propertyName )
+		{
+			if ( m_globalShaderProperties == null )
+			{
+				m_globalShaderProperties = new Dictionary<string, TemplateShaderPropertyData>();
+				for ( int subShaderIdx = 0; subShaderIdx < SubShaders.Count; subShaderIdx++ )
+				{
+					foreach ( var data in SubShaders[ subShaderIdx ].AvailableShaderGlobals )
+					{
+						m_globalShaderProperties[ data.PropertyName ] = data;
+					}
+					for ( int passIdx = 0; passIdx < SubShaders[ subShaderIdx ].Passes.Count; passIdx++ )
+					{
+						foreach ( var data in SubShaders[ subShaderIdx ].Passes[ passIdx ].AvailableShaderGlobals )
+						{
+							m_globalShaderProperties[ data.PropertyName ] = data;
+						}
+					}
+				}
+			}
+
+			if ( !m_globalShaderProperties.TryGetValue( propertyName, out TemplateShaderPropertyData resultData ) )
+			{
+				return null;
+			}
+			return resultData;
 		}
 
 		public TemplateSRPType SRPtype { get { return m_subShaders[ 0 ].Modules.SRPType; } }

@@ -257,7 +257,7 @@ namespace AmplifyShaderEditor
 
 		public void SetPreviewInput( InputPort input )
 		{
-			if( !HasPreviewShader || !m_initialized )
+			if( !HasPreviewShader || !m_initialized || Preferences.User.DisablePreviews )
 				return;
 
 			if( input.IsConnected && input.InputNodeHasPreview( ContainerGraph ) )

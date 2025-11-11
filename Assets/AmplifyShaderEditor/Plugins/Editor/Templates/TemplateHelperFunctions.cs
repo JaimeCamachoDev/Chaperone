@@ -904,16 +904,50 @@ namespace AmplifyShaderEditor
 			{"SamplerState"     ,WirePortDataType.SAMPLERSTATE}
 		};
 
+		public static readonly Dictionary<string, PrecisionType> CgToPrecisionType = new Dictionary<string, PrecisionType>()
+		{
+			{"float"            ,PrecisionType.Float},
+			{"float2"           ,PrecisionType.Float},
+			{"float3"           ,PrecisionType.Float},
+			{"float4"           ,PrecisionType.Float},
+			{"float2x2"         ,PrecisionType.Float},
+			{"float3x3"         ,PrecisionType.Float},
+			{"float4x4"         ,PrecisionType.Float},
+			{"half"             ,PrecisionType.Half},
+			{"half2"            ,PrecisionType.Half},
+			{"half3"            ,PrecisionType.Half},
+			{"half4"            ,PrecisionType.Half},
+			{"half2x2"          ,PrecisionType.Half},
+			{"half3x3"          ,PrecisionType.Half},
+			{"half4x4"          ,PrecisionType.Half},
+			{"fixed"            ,PrecisionType.Half},
+			{"fixed2"           ,PrecisionType.Half},
+			{"fixed3"           ,PrecisionType.Half},
+			{"fixed4"           ,PrecisionType.Half},
+			{"fixed2x2"         ,PrecisionType.Half},
+			{"fixed3x3"         ,PrecisionType.Half},
+			{"fixed4x4"         ,PrecisionType.Half},
+			{"int"              ,PrecisionType.Float},
+			{"uint"             ,PrecisionType.Float},
+			{"sampler1D"        ,PrecisionType.Float},
+			{"sampler2D"        ,PrecisionType.Float},
+			{"sampler2D_float"  ,PrecisionType.Float},
+			{"sampler3D"        ,PrecisionType.Float},
+			{"samplerCUBE"      ,PrecisionType.Float},
+			{"sampler2DArray"   ,PrecisionType.Float},
+			{"SamplerState"     ,PrecisionType.Float}
+		};
+
 		public static readonly Dictionary<string, int> AvailableInterpolators = new Dictionary<string, int>()
 		{
 			{"2.0",8 },
 			{"2.5",8 },
 			{"3.0",10},
-			{"3.5",10},
-			{"4.0",16},
-			{"4.5",16},
-			{"4.6",16},
-			{"5.0",16}
+			{"3.5",15},
+			{"4.0",15},
+			{"4.5",15},
+			{"4.6",15},
+			{"5.0",15}
 		};
 
 		public static readonly string[] AvailableShaderModels =
@@ -1234,7 +1268,8 @@ namespace AmplifyShaderEditor
 																								CgToWirePortType[ lineMatch.Groups[ typeIdx ].Value ],
 																								PropertyType.Global,
 																								subShaderId,
-																								passId);
+																								passId,
+																								precisionType: CgToPrecisionType[ lineMatch.Groups[ typeIdx ].Value ]);
 						duplicatesHelper.Add( newData.PropertyName, newData );
 						propertiesList.Add( newData );
 					}
@@ -1820,7 +1855,7 @@ namespace AmplifyShaderEditor
 
 		public static int GetUnityVersion()
 		{
-			var versionParts = Application.unityVersion.Split( '.', 'f' );
+			var versionParts = Application.unityVersion.Split( '.', 'f', 'b' );
 			if ( versionParts.Length != 4 || versionParts[ 0 ].Length < 4 )
 			{
 				// @diogo: invalid Unity version format; ignore these conditionals
@@ -1836,7 +1871,12 @@ namespace AmplifyShaderEditor
 				return 0;
 			}
 
+		#if UNITY_6000_0_OR_NEWER
+			// e.g. major = 6000, minor = 999, patch = 9999
+			return ( major + minor ) * 10000 + patch;
+		#else
 			return major * 10000 + minor * 100 + patch;
+		#endif
 		}
 
 		public static bool GetUnityBetaVersion( out int betaVersion )

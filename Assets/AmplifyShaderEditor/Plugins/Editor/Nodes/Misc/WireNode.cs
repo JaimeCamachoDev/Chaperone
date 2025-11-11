@@ -18,6 +18,7 @@ namespace AmplifyShaderEditor
 		{
 			base.CommonInit( uniqueId );
 			AddInputPort( WirePortDataType.OBJECT, false, string.Empty );
+			m_inputPorts[ 0 ].SetFreeForAll();
 			AddOutputPort( WirePortDataType.OBJECT, Constants.EmptyPortValue );
 			m_tooltipText = string.Empty;
 			m_drawPreview = false;

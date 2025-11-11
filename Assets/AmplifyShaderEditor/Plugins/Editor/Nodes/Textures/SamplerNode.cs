@@ -207,13 +207,12 @@ namespace AmplifyShaderEditor
 			bool usingTexture = false;
 
 			// @diogo: we can't use the preview texture, in this case, because output preview RenderTextures have no mips
-			//if( m_texPort.IsConnected )
-			//{
-			//	usingTexture = true;
-			//	SetPreviewTexture( m_texPort.InputPreviewTexture( ContainerGraph ) );
-			//}
-			//else
-			if( SoftValidReference && m_referenceSampler.TextureProperty != null )
+			if( m_texPort.IsConnected && TextureProperty != null && TextureProperty.Value == null )
+			{
+				usingTexture = true;
+				SetPreviewTexture( m_texPort.InputPreviewTexture( ContainerGraph ) );
+			}
+			else if( SoftValidReference && m_referenceSampler.TextureProperty != null )
 			{
 				if( m_referenceSampler.TextureProperty.Value != null )
 				{
@@ -1090,7 +1089,7 @@ namespace AmplifyShaderEditor
 			{
 				useMacros = Constants.TexSampleSRPMacros.ContainsKey( m_currentType );
 			}
-			
+
 			if( useMacros || m_currentType == TextureType.Texture2DArray )
 			{
 				string suffix = string.Empty;
@@ -1107,7 +1106,7 @@ namespace AmplifyShaderEditor
 					suffix = "_LOD";
 
 				string samplerToUse = string.Empty;
-				
+
 				if( !m_samplerPort.IsConnected && m_useSamplerArrayIdx > 0 )
 				{
 					TexturePropertyNode samplerNode = UIUtils.GetTexturePropertyNode( m_useSamplerArrayIdx - 1 );
@@ -1430,9 +1429,9 @@ namespace AmplifyShaderEditor
 						m_texCoordsHelper.ContainerGraph = ContainerGraph;
 						m_texCoordsHelper.SetBaseUniqueId( UniqueId, true );
 						m_texCoordsHelper.RegisterPropertyOnInstancing = false;
-						m_texCoordsHelper.AddGlobalToSRPBatcher = true;
 					}
 
+					m_texCoordsHelper.AddGlobalToSRPBatcher = ( TextureProperty.CurrentParameterType != PropertyType.Global );
 					m_texCoordsHelper.CurrentParameterType = PropertyType.Global;
 
 					m_texCoordsHelper.ResetOutputLocals();
@@ -1786,7 +1785,7 @@ namespace AmplifyShaderEditor
 					{
 						int newId = VersionConvertInputPortId( i );
 						string InternalData = string.Empty;
-						
+
 						if( UIUtils.CurrentShaderVersion() > 23 )
 						{
 							Enum.Parse( typeof( WirePortDataType ), nodeParams[ m_currentReadParamIdx++ ] );

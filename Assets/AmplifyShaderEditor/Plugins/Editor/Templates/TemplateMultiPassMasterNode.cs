@@ -237,7 +237,7 @@ namespace AmplifyShaderEditor
 
 			if( !IsLODMainMasterNode )
 				return;
-			TemplateMultiPass template = ( m_templateMultiPass == null ) ? m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( m_templateGUID ) as TemplateMultiPass : m_templateMultiPass;
+			TemplateMultiPass template = ( m_templateMultiPass == null ) ? TemplatesManager.Instance.GetTemplate( m_templateGUID ) as TemplateMultiPass : m_templateMultiPass;
 			//Maintained the logic of being the main master node to unregister since this method is being called
 			//over the main master node in multiple places
 			//but it will unregister with unique of the first master node (pass 0) since it was the one
@@ -369,7 +369,7 @@ namespace AmplifyShaderEditor
 
 			ReleaseResources();
 			bool hotCodeOrRead = ( template == null );
-			m_templateMultiPass = ( hotCodeOrRead ) ? m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( m_templateGUID ) as TemplateMultiPass : template;
+			m_templateMultiPass = ( hotCodeOrRead ) ? TemplatesManager.Instance.GetTemplate( m_templateGUID ) as TemplateMultiPass : template;
 			if( m_templateMultiPass != null )
 			{
 
@@ -1098,11 +1098,11 @@ namespace AmplifyShaderEditor
 
 		void SetCategoryIdxFromTemplate()
 		{
-			int templateCount = m_containerGraph.ParentWindow.TemplatesManagerInstance.TemplateCount;
+			int templateCount = TemplatesManager.Instance.TemplateCount;
 			for( int i = 0 ; i < templateCount ; i++ )
 			{
 				int idx = i + 1;
-				TemplateMultiPass templateData = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( i ) as TemplateMultiPass;
+				TemplateMultiPass templateData = TemplatesManager.Instance.GetTemplate( i ) as TemplateMultiPass;
 				if( templateData != null && m_templateMultiPass != null && m_templateMultiPass.GUID.Equals( templateData.GUID ) )
 					m_masterNodeCategory = idx;
 			}
@@ -1201,7 +1201,7 @@ namespace AmplifyShaderEditor
 				if( m_isMainOutputNode )
 				{
 					string newGUID = string.Empty;
-					if( m_containerGraph.ParentWindow.TemplatesManagerInstance.CheckIfDeprecated( m_templateGUID , out newGUID ) )
+					if( TemplatesManager.Instance.CheckIfDeprecated( m_templateGUID , out newGUID ) )
 					{
 						m_shaderModelIdx = 0;
 						SetMasterNodeCategoryFromGUID( newGUID );
@@ -2462,17 +2462,37 @@ namespace AmplifyShaderEditor
 			MasterNodeDataCollector currDataCollector = ( dataCollector == null ) ? m_currentDataCollector : dataCollector;
 
 			// Temporary hack
-			if( m_templateMultiPass.SRPtype != TemplateSRPType.BiRP )
+			if ( m_templateMultiPass.SRPtype != TemplateSRPType.BiRP )
 			{
-				if( m_templateMultiPass.AvailableShaderProperties.Find( x => x.PropertyName.Equals( "_AlphaCutoff" ) ) == null )
+				var masterNode = ( m_mainMasterNodeRef != null ) ? m_mainMasterNodeRef : m_containerGraph.CurrentMasterNode as TemplateMultiPassMasterNode;
+
+				if ( m_templateMultiPass.SRPtype == TemplateSRPType.HDRP && masterNode != null )
 				{
-					if( !currDataCollector.ContainsProperty("_AlphaCutoff") )
+					// @diogo: show Alpha Cutoff and/or Alpha Cutoff Shadow controls in Material when not connected
+					var alphaClipPort = masterNode.GetInputPortByExternalLinkId( "_AlphaClip" );
+					var alphaClipShadowPort = masterNode.GetInputPortByExternalLinkId( "_AlphaClipShadow" );
+
+					bool autoAlphaClip = ( alphaClipPort != null && alphaClipPort.Visible && !alphaClipPort.IsConnected );
+					bool autoAlphaClipShadow = ( alphaClipShadowPort != null && alphaClipShadowPort.Visible && !alphaClipShadowPort.IsConnected );
+
+					if ( autoAlphaClip && m_templateMultiPass.AvailableShaderProperties.Find( x => x.PropertyName.Equals( "_AlphaCutoff" ) ) == null )
 					{
-						currDataCollector.AddToProperties( UniqueId, "[HideInInspector] _AlphaCutoff(\"Alpha Cutoff \", Range(0, 1)) = 0.5", -1 );
+						if ( !currDataCollector.ContainsProperty( "_AlphaCutoff" ) )
+						{
+							currDataCollector.AddToProperties( UniqueId, "[HideInInspector] _AlphaCutoff(\"Alpha Cutoff\", Range(0, 1)) = 0.5", -1 );
+						}
+					}
+
+					if ( autoAlphaClipShadow && m_templateMultiPass.AvailableShaderProperties.Find( x => x.PropertyName.Equals( "_AlphaCutoffShadow" ) ) == null )
+					{
+						if ( !currDataCollector.ContainsProperty( "_AlphaCutoffShadow" ) )
+						{
+							currDataCollector.AddToProperties( UniqueId, "[HideInInspector] _AlphaCutoffShadow(\"Alpha Cutoff Shadow\", Range(0, 1)) = 0.5", -1 );
+						}
 					}
 				}
 
-				if( m_templateMultiPass.AvailableShaderProperties.Find( x => x.PropertyName.Equals( "_EmissionColor" ) ) == null )
+				if ( m_templateMultiPass.AvailableShaderProperties.Find( x => x.PropertyName.Equals( "_EmissionColor" ) ) == null )
 				{
 					if( !currDataCollector.ContainsProperty( "_EmissionColor" ) )
 					{
@@ -2526,6 +2546,8 @@ namespace AmplifyShaderEditor
 					}
 				}
 
+				var linkedNodes = new HashSet<TemplateMultiPassMasterNode>();
+
 				int inputCount = m_inputPorts.Count;
 				for( int i = 0 ; i < inputCount ; i++ )
 				{
@@ -2534,9 +2556,14 @@ namespace AmplifyShaderEditor
 						TemplateMultiPassMasterNode linkedNode = m_inputPorts[ i ].ExternalLinkNode as TemplateMultiPassMasterNode;
 						if( linkedNode != null )
 						{
-							SetLinkedModuleData( linkedNode.PassModule );
+							linkedNodes.Add( linkedNode );
 						}
 					}
+				}
+
+				foreach ( var node in linkedNodes )
+				{
+					SetLinkedModuleData( node.PassModule );
 				}
 			}
 
@@ -2611,7 +2638,7 @@ namespace AmplifyShaderEditor
 					m_templateMultiPass.SetPassData( TemplateModuleDataType.VControl , m_subShaderIdx , m_passIdx , inputArray );
 
 				if( m_templateMultiPass.SubShaders[ m_subShaderIdx ].Passes[ m_passIdx ].TessControlData != null && m_templateMultiPass.SubShaders[ m_subShaderIdx ].Passes[ m_passIdx ].TessControlData.IsValid )
-					m_templateMultiPass.SetPassData( TemplateModuleDataType.ControlData , m_subShaderIdx , m_passIdx , m_templateMultiPass.SubShaders[ m_subShaderIdx ].Passes[ m_passIdx ].TessControlData.GenerateControl( m_currentDataCollector.TemplateDataCollectorInstance.VertexDataDict , m_currentDataCollector.VertexInputList ) );
+					m_templateMultiPass.SetPassData( TemplateModuleDataType.ControlData , m_subShaderIdx , m_passIdx , m_templateMultiPass.SubShaders[ m_subShaderIdx ].Passes[ m_passIdx ].TessControlData.GenerateControl( m_currentDataCollector.MasterNode, m_currentDataCollector.TemplateDataCollectorInstance.VertexDataDict , m_currentDataCollector.VertexInputList ) );
 
 				if( m_templateMultiPass.SubShaders[ m_subShaderIdx ].Passes[ m_passIdx ].TessDomainData != null && m_templateMultiPass.SubShaders[ m_subShaderIdx ].Passes[ m_passIdx ].TessDomainData.IsValid )
 					m_templateMultiPass.SetPassData( TemplateModuleDataType.DomainData , m_subShaderIdx , m_passIdx , m_templateMultiPass.SubShaders[ m_subShaderIdx ].Passes[ m_passIdx ].TessDomainData.GenerateDomain( m_currentDataCollector.TemplateDataCollectorInstance.VertexDataDict , m_currentDataCollector.VertexInputList ) );
@@ -3161,7 +3188,7 @@ namespace AmplifyShaderEditor
 		void CheckLegacyCustomInspectors()
 		{
 #if UNITY_2021_2_OR_NEWER
-			if( m_templateMultiPass.SubShaders[ 0 ].Modules.SRPType == TemplateSRPType.HDRP && ASEPackageManagerHelper.CurrentHDRPBaseline >= ASESRPBaseline.ASE_SRP_11_0 )
+			if( m_templateMultiPass.SubShaders[ 0 ].Modules.SRPType == TemplateSRPType.HDRP && ASEPackageManagerHelper.CurrentHDRPBaseline >= ASESRPBaseline.ASE_SRP_11_X )
 			{
 				if( Constants.CustomInspectorHDLegacyTo11.ContainsKey( m_customInspectorName ) )
 				{
@@ -3170,7 +3197,7 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-			if( m_templateMultiPass.SubShaders[ 0 ].Modules.SRPType == TemplateSRPType.URP && ASEPackageManagerHelper.CurrentURPBaseline>= ASESRPBaseline.ASE_SRP_12_0 )
+			if( m_templateMultiPass.SubShaders[ 0 ].Modules.SRPType == TemplateSRPType.URP && ASEPackageManagerHelper.CurrentURPBaseline>= ASESRPBaseline.ASE_SRP_12_X )
 			{
 				if( Constants.CustomInspectorURP10To12.ContainsKey( m_customInspectorName ) )
 				{
@@ -3194,7 +3221,7 @@ namespace AmplifyShaderEditor
 			}
 
 #elif UNITY_2021_1_OR_NEWER
-			if( m_templateMultiPass.SubShaders[ 0 ].Modules.SRPType == TemplateSRPType.HDRP && ASEPackageManagerHelper.CurrentHDRPBaseline >= ASESRPBaseline.ASE_SRP_11_0 )
+			if( m_templateMultiPass.SubShaders[ 0 ].Modules.SRPType == TemplateSRPType.HDRP && ASEPackageManagerHelper.CurrentHDRPBaseline >= ASESRPBaseline.ASE_SRP_11_X )
 			{
 				if( Constants.CustomInspectorHDLegacyTo11.ContainsKey( m_customInspectorName ) )
 				{
@@ -3203,7 +3230,7 @@ namespace AmplifyShaderEditor
 				}
 			}
 #elif UNITY_2020_2_OR_NEWER
-			if(  m_templateMultiPass.SubShaders[0].Modules.SRPType == TemplateSRPType.HDRP && ASEPackageManagerHelper.CurrentHDRPBaseline >= ASESRPBaseline.ASE_SRP_10_0 )
+			if(  m_templateMultiPass.SubShaders[0].Modules.SRPType == TemplateSRPType.HDRP && ASEPackageManagerHelper.CurrentHDRPBaseline >= ASESRPBaseline.ASE_SRP_10_X )
 			{
 				if( Constants.CustomInspectorHD7To10.ContainsKey( m_customInspectorName ) )
 				{
@@ -3271,7 +3298,7 @@ namespace AmplifyShaderEditor
 					templateShaderName = GetCurrentParam( ref nodeParams );
 				}
 
-				TemplateMultiPass template = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( templateGUID ) as TemplateMultiPass;
+				TemplateMultiPass template = TemplatesManager.Instance.GetTemplate( templateGUID ) as TemplateMultiPass;
 				if( template != null )
 				{
 					m_templateGUID = templateGUID;
@@ -3279,7 +3306,7 @@ namespace AmplifyShaderEditor
 				}
 				else
 				{
-					template = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplateByName( templateShaderName ) as TemplateMultiPass;
+					template = TemplatesManager.Instance.GetTemplateByName( templateShaderName ) as TemplateMultiPass;
 					if( template != null )
 					{
 						m_templateGUID = template.GUID;
@@ -3622,6 +3649,7 @@ namespace AmplifyShaderEditor
 		public TemplateOptionsUIHelper SubShaderOptions { get { return m_subShaderOptions; } }
 		public TemplateOptionsDefinesContainer OptionsDefineContainer { get { return m_optionsDefineContainer; } }
 		public TerrainDrawInstancedHelper DrawInstancedHelperInstance { get { return m_drawInstancedHelper; } }
+		public TerrainDrawInstancedHelper DrawInstancedHelper { get { return m_isMainOutputNode ? m_drawInstancedHelper : m_mainMasterNodeRef.DrawInstancedHelperInstance; } }
 		public bool InvalidNode { get { return m_invalidNode; } }
 		public override void SetName( string name )
 		{

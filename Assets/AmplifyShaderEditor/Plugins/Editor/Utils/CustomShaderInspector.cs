@@ -57,7 +57,8 @@ namespace AmplifyShaderEditor
 			"Vector: ",
 			"Float: ",
 			"Range: ",
-			"Texture: "
+			"Texture: ",
+			"Int: "
 		};
 
 		private static readonly string[] kTextureTypes = new string[]

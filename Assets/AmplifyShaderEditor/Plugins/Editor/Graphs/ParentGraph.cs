@@ -1897,16 +1897,19 @@ namespace AmplifyShaderEditor
 					ParentNode inputNode = GetNode( inNodeId );
 					InputPort inputPort = inputNode.GetInputPortByUniqueId( inPortId );
 
-					if( !inputPort.CheckValidType( outputPort.DataType ) )
+					if ( inputPort.NotFreeForAllTypes && outputPort.NotFreeForAllTypes )
 					{
-						UIUtils.ShowIncompatiblePortMessage( true, inputNode, inputPort, outputNode, outputPort );
-						return;
-					}
+						if ( !inputPort.CheckValidType( outputPort.DataType ) )
+						{
+							UIUtils.ShowIncompatiblePortMessage( true, inputNode, inputPort, outputNode, outputPort );
+							return;
+						}
 
-					if( !outputPort.CheckValidType( inputPort.DataType ) )
-					{
-						UIUtils.ShowIncompatiblePortMessage( false, outputNode, outputPort, inputNode, inputPort );
-						return;
+						if ( !outputPort.CheckValidType( inputPort.DataType ) )
+						{
+							UIUtils.ShowIncompatiblePortMessage( false, outputNode, outputPort, inputNode, inputPort );
+							return;
+						}
 					}
 
 					inputPort.DummyAdd( outputPort.NodeId, outputPort.PortId );
@@ -3273,7 +3276,7 @@ namespace AmplifyShaderEditor
 			masterNodes.NodesList.Sort( ( x, y ) => ( x.SubShaderIdx * 1000 + x.PassIdx ).CompareTo( y.SubShaderIdx * 1000 + y.PassIdx ) );
 			masterNodes.UpdateNodeArr();
 
-			m_parentWindow.TemplatesManagerInstance.ResetOptionsSetupData();
+			TemplatesManager.Instance.ResetOptionsSetupData();
 			for( int i = 0; i < mpCount; i++ )
 			{
 				int visiblePorts = 0;
@@ -3538,7 +3541,7 @@ namespace AmplifyShaderEditor
 		public void CreateNewEmptyTemplate( string templateGUID )
 		{
 			CleanNodes();
-			TemplateDataParent templateData = m_parentWindow.TemplatesManagerInstance.GetTemplate( templateGUID );
+			TemplateDataParent templateData = TemplatesManager.Instance.GetTemplate( templateGUID );
 			if( templateData.TemplateType == TemplateDataType.LegacySinglePass )
 			{
 				TemplateMasterNode newMasterNode = CreateNode( typeof( TemplateMasterNode ), false ) as TemplateMasterNode;
@@ -3641,6 +3644,32 @@ namespace AmplifyShaderEditor
 			{
 				Debug.LogWarning( "Invalid virtual texture count" );
 			}
+		}
+
+		public bool HasPassWithTag( int lod, string tagKey, string tagValue = "" )
+		{
+			var passes = GetMultiPassMasterNodes( lod );
+			foreach ( TemplateMultiPassMasterNode pass in passes )
+			{
+				if ( pass.PassModule != null && pass.PassModule.TagsHelper != null && pass.PassModule.TagsHelper.HasTag( tagKey, tagValue ) )
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public TemplateMultiPassMasterNode GetPassWithTag( int lod, string tagKey, string tagValue = "" )
+		{
+			var passes = GetMultiPassMasterNodes( lod );
+			foreach ( TemplateMultiPassMasterNode pass in passes )
+			{
+				if ( pass.PassModule != null && pass.PassModule.TagsHelper != null && pass.PassModule.TagsHelper.HasTag( tagKey, tagValue ) )
+				{
+					return pass;
+				}
+			}
+			return null;
 		}
 
 		public bool HasVirtualTexture { get { return m_virtualTextureCount > 0; } }

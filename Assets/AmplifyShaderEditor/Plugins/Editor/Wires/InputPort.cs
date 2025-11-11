@@ -575,7 +575,7 @@ namespace AmplifyShaderEditor
 			if( connID < m_externalReferences.Count )
 			{
 				ParentNode node = UIUtils.GetNode( m_externalReferences[ connID ].NodeId );
-				if( node is WireNode || node is RelayNode || node is FunctionInput )
+				if( node is WireNode || node is RelayNode || node is FunctionInput || node is GetLocalVarNode || node is RegisterLocalVarNode )
 				{
 					return node.InputPorts[ 0 ].GetOutputNodeWhichIsNotRelay( connID );
 				}
@@ -1269,7 +1269,7 @@ namespace AmplifyShaderEditor
 		{
 			if( m_inputPreviewTexture == null )
 			{
-				m_inputPreviewTexture = new RenderTexture( Constants.PreviewSize , Constants.PreviewSize , 0, Constants.PreviewFormat , RenderTextureReadWrite.Linear );
+				m_inputPreviewTexture = new RenderTexture( Preferences.User.PreviewSize , Preferences.User.PreviewSize , 0, Preferences.User.PreviewFormat , RenderTextureReadWrite.Linear );
 				m_inputPreviewTexture.wrapMode = TextureWrapMode.Repeat;
 			}
 

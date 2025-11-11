@@ -2212,7 +2212,7 @@ namespace AmplifyShaderEditor
 
 		public virtual void SetPreviewInputs()
 		{
-			if( !HasPreviewShader || !m_initialized )
+			if( !HasPreviewShader || !m_initialized || Preferences.User.DisablePreviews )
 				return;
 
 			int count = m_inputPorts.Count;
@@ -3613,7 +3613,7 @@ namespace AmplifyShaderEditor
 			if (!Preferences.User.DisablePreviews)
 			{
 				RenderTexture temp = RenderTexture.active;
-				RenderTexture beforeMask = RenderTexture.GetTemporary(Constants.PreviewSize, Constants.PreviewSize, 0, Constants.PreviewFormat, RenderTextureReadWrite.Linear);
+				RenderTexture beforeMask = RenderTexture.GetTemporary(Preferences.User.PreviewSize, Preferences.User.PreviewSize, 0, Preferences.User.PreviewFormat, RenderTextureReadWrite.Linear);
 
 				int count = m_outputPorts.Count;
 				for( int i = 0; i < count; i++ )

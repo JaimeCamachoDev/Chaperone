@@ -1089,17 +1089,11 @@ namespace AmplifyShaderEditor
 					texSTHelper.ContainerGraph = ContainerGraph;
 					texSTHelper.SetBaseUniqueId( UniqueId, true );
 					texSTHelper.RegisterPropertyOnInstancing = false;
-					texSTHelper.AddGlobalToSRPBatcher = true;
 				}
 
-				if ( UIUtils.CurrentWindow.OutsideGraph.IsInstancedShader )
-				{
-					texSTHelper.CurrentParameterType = PropertyType.InstancedProperty;
-				}
-				else
-				{
-					texSTHelper.CurrentParameterType = PropertyType.Global;
-				}
+				texSTHelper.AddGlobalToSRPBatcher = ( texProp.CurrentParameterType != PropertyType.Global );
+				texSTHelper.CurrentParameterType = PropertyType.Global;
+
 				texSTHelper.ResetOutputLocals();
 				texSTHelper.SetRawPropertyName( texProp.PropertyName + "_ST" );
 				texCoordsST = texSTHelper.GenerateShaderForOutput( 0, ref dataCollector, false );
@@ -1126,8 +1120,11 @@ namespace AmplifyShaderEditor
 			string ssTop = string.Empty;
 			string ssMid = string.Empty;
 			string ssBot = string.Empty;
+			string stTop = string.Empty;
+			string stMid = string.Empty;
+			string stBot = string.Empty;
 
-			if( m_topTexPort.IsConnected )
+			if ( m_topTexPort.IsConnected )
 			{
 				texTop = m_topTexPort.GeneratePortInstructions( ref dataCollector );
 			}
@@ -1138,12 +1135,18 @@ namespace AmplifyShaderEditor
 				texTop = m_topTexture.PropertyName;
 			}
 
-			if( m_selectedTriplanarType == TriplanarType.Spherical )
+			stTop = GetScaleOffsetForTexture( ref dataCollector, m_topTexPort, m_topTexture, ref m_topTexSTHelper );
+			stTop = !string.IsNullOrEmpty( stTop ) ? stTop : "float4( 1, 1, 0, 0 )";
+
+			if ( m_selectedTriplanarType == TriplanarType.Spherical )
 			{
 				texMid = texTop;
 				texBot = texTop;
 
-				if( ( outsideGraph.SamplingMacros || m_topTexPort.DataType == WirePortDataType.SAMPLER2DARRAY ) )
+				stMid = stTop;
+				stBot = stTop;
+
+				if ( ( outsideGraph.SamplingMacros || m_topTexPort.DataType == WirePortDataType.SAMPLER2DARRAY ) )
 					ssTop = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, texTop , VariableMode.Create );
 			}
 			else
@@ -1169,7 +1172,13 @@ namespace AmplifyShaderEditor
 					dataCollector.AddToProperties( UniqueId, m_botTexture.GetTexture2DPropertyValue(), m_botTexture.OrderIndex );
 					texBot = m_botTexture.PropertyName;
 				}
-				if( ( outsideGraph.SamplingMacros || m_topTexPort.DataType == WirePortDataType.SAMPLER2DARRAY ) )
+
+				stMid = GetScaleOffsetForTexture( ref dataCollector, m_midTexPort, m_midTexture, ref m_midTexSTHelper );
+				stBot = GetScaleOffsetForTexture( ref dataCollector, m_botTexPort, m_botTexture, ref m_botTexSTHelper );
+				stMid = !string.IsNullOrEmpty( stMid ) ? stMid : "float4( 1, 1, 0, 0 )";
+				stBot = !string.IsNullOrEmpty( stBot ) ? stBot : "float4( 1, 1, 0, 0 )";
+
+				if ( ( outsideGraph.SamplingMacros || m_topTexPort.DataType == WirePortDataType.SAMPLER2DARRAY ) )
 					ssTop = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, texTop , VariableMode.Create );
 				if( ( outsideGraph.SamplingMacros || m_midTexPort.DataType == WirePortDataType.SAMPLER2DARRAY ) )
 					ssMid = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, texMid , VariableMode.Create );
@@ -1177,7 +1186,7 @@ namespace AmplifyShaderEditor
 					ssBot = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, texBot , VariableMode.Create );
 			}
 
-			if( !isVertex )
+			if ( !isVertex )
 			{
 				dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_POS );
 				dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_NORMAL, UIUtils.CurrentWindow.CurrentGraph.CurrentPrecision );
@@ -1194,20 +1203,6 @@ namespace AmplifyShaderEditor
 				midIndex = m_midIndexPort.GeneratePortInstructions( ref dataCollector );
 			if( m_botIndexPort.Visible )
 				botIndex = m_botIndexPort.GeneratePortInstructions( ref dataCollector );
-
-			string topScaleOffset = GetScaleOffsetForTexture( ref dataCollector, m_topTexPort, m_topTexture, ref m_topTexSTHelper );
-			string midScaleOffset;
-			string botScaleOffset;
-			if ( m_selectedTriplanarType == TriplanarType.Spherical )
-			{
-				midScaleOffset = topScaleOffset;
-				botScaleOffset = topScaleOffset;
-			}
-			else
-			{
-				midScaleOffset = GetScaleOffsetForTexture( ref dataCollector, m_midTexPort, m_midTexture, ref m_midTexSTHelper );
-				botScaleOffset = GetScaleOffsetForTexture( ref dataCollector, m_botTexPort, m_botTexture, ref m_botTexSTHelper );
-			}
 
 			string tiling = m_tilingPort.GeneratePortInstructions( ref dataCollector );
 			string falloff = m_falloffPort.GeneratePortInstructions( ref dataCollector );
@@ -1229,18 +1224,16 @@ namespace AmplifyShaderEditor
 			headerID += OutputId;
 			if( m_selectedTriplanarType == TriplanarType.Spherical )
 			{
-				samplers = GeneratorUtils.GetPropertyDeclaraction( "topTexMap", m_topTexPort.DataType, ", " ) + GeneratorUtils.GetSamplerDeclaraction( "samplertopTexMap", m_topTexPort.DataType, ", " );
+				samplers = GeneratorUtils.GetPropertyDeclaraction( "topTexMap", m_topTexPort.DataType, ", " ) + "const float4 topST, " + GeneratorUtils.GetSamplerDeclaraction( "samplertopTexMap", m_topTexPort.DataType, ", " );
 
 				string xUV = "tiling * worldPos.zy * float2(  nsign.x, 1.0 )";
 				string yUV = "tiling * worldPos.xz * float2(  nsign.y, 1.0 )";
 				string zUV = "tiling * worldPos.xy * float2( -nsign.z, 1.0 )";
 
-				if ( topScaleOffset != string.Empty )
-				{
-					xUV = string.Format( "{0} * {1}.xy + {1}.zw", xUV, topScaleOffset );
-					yUV = string.Format( "{0} * {1}.xy + {1}.zw", yUV, topScaleOffset );
-					zUV = string.Format( "{0} * {1}.xy + {1}.zw", zUV, topScaleOffset );
-				}
+
+				xUV = string.Format( "{0} * topST.xy + topST.zw", xUV );
+				yUV = string.Format( "{0} * topST.xy + topST.zw", yUV );
+				zUV = string.Format( "{0} * topST.xy + topST.zw", zUV );
 
 				if( m_topTexPort.DataType == WirePortDataType.SAMPLER2DARRAY )
 				{
@@ -1273,9 +1266,9 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				string topArgs = GeneratorUtils.GetPropertyDeclaraction( "topTexMap", m_topTexPort.DataType, ", " ) + GeneratorUtils.GetSamplerDeclaraction( "samplertopTexMap", m_topTexPort.DataType, ", " );
-				string midArgs = GeneratorUtils.GetPropertyDeclaraction( "midTexMap", m_midTexPort.DataType, ", " ) + GeneratorUtils.GetSamplerDeclaraction( "samplermidTexMap", m_midTexPort.DataType, ", " );
-				string botArgs = GeneratorUtils.GetPropertyDeclaraction( "botTexMap", m_botTexPort.DataType, ", " ) + GeneratorUtils.GetSamplerDeclaraction( "samplerbotTexMap", m_botTexPort.DataType, ", " );
+				string topArgs = GeneratorUtils.GetPropertyDeclaraction( "topTexMap", m_topTexPort.DataType, ", " ) + "const float4 topST, " + GeneratorUtils.GetSamplerDeclaraction( "samplertopTexMap", m_topTexPort.DataType, ", " );
+				string midArgs = GeneratorUtils.GetPropertyDeclaraction( "midTexMap", m_midTexPort.DataType, ", " ) + "const float4 midST, " + GeneratorUtils.GetSamplerDeclaraction( "samplermidTexMap", m_midTexPort.DataType, ", " );
+				string botArgs = GeneratorUtils.GetPropertyDeclaraction( "botTexMap", m_botTexPort.DataType, ", " ) + "const float4 botST, " + GeneratorUtils.GetSamplerDeclaraction( "samplerbotTexMap", m_botTexPort.DataType, ", " );
 
 				samplers = topArgs + midArgs + botArgs;
 
@@ -1284,19 +1277,10 @@ namespace AmplifyShaderEditor
 				string uvMidNeg = "tiling * worldPos.xy * float2( -nsign.z, 1.0 )";
 				string uvBot    = "tiling * worldPos.xz * float2(  nsign.y, 1.0 )";
 
-				if ( topScaleOffset != string.Empty )
-				{
-					uvTop = string.Format( "{0} * {1}.xy + {1}.zw", uvTop, topScaleOffset );
-				}
-				if ( midScaleOffset != string.Empty )
-				{
-					uvMid = string.Format( "{0} * {1}.xy + {1}.zw", uvMid, midScaleOffset );
-					uvMidNeg = string.Format( "{0} * {1}.xy + {1}.zw", uvMidNeg, midScaleOffset );
-				}
-				if ( botScaleOffset != string.Empty )
-				{
-					uvBot = string.Format( "{0} * {1}.xy + {1}.zw", uvBot, botScaleOffset );
-				}
+				uvTop = string.Format( "{0} * topST.xy + topST.zw", uvTop );
+				uvMid = string.Format( "{0} * midST.xy + midST.zw", uvMid );
+				uvMidNeg = string.Format( "{0} * midST.xy + midST.zw", uvMidNeg );
+				uvBot = string.Format( "{0} * botST.xy + botST.zw", uvBot );
 
 				if( m_topTexPort.DataType == WirePortDataType.SAMPLER2DARRAY )
 				{
@@ -1387,17 +1371,19 @@ namespace AmplifyShaderEditor
 			string call = string.Empty;
 			string normalScale = m_scalePort.GeneratePortInstructions( ref dataCollector );
 
-			if( !string.IsNullOrEmpty( ssTop ) )
-				ssTop = ", " + ssTop;
-			if( !string.IsNullOrEmpty( ssMid ) )
-				ssMid = ", " + ssMid;
-			if( !string.IsNullOrEmpty( ssBot ) )
-				ssBot = ", " + ssBot;
+			stTop = ", " + stTop;
+			stMid = ", " + stMid;
+			stBot = ", " + stBot;
 
-			if( m_selectedTriplanarType == TriplanarType.Spherical )
-				call = dataCollector.AddFunctions( callHeader, samplingTriplanar, texTop + ssTop, pos, norm, falloff, tiling, normalScale, topIndex );
+			ssTop = !string.IsNullOrEmpty( ssTop ) ? ", " + ssTop : ssTop;
+			ssMid = !string.IsNullOrEmpty( ssMid ) ? ", " + ssMid : ssMid;
+			ssBot = !string.IsNullOrEmpty( ssBot ) ? ", " + ssBot : ssBot;
+
+
+			if ( m_selectedTriplanarType == TriplanarType.Spherical )
+				call = dataCollector.AddFunctions( callHeader, samplingTriplanar, texTop + stTop + ssTop, pos, norm, falloff, tiling, normalScale, topIndex );
 			else
-				call = dataCollector.AddFunctions( callHeader, samplingTriplanar, texTop + ssTop, texMid + ssMid, texBot + ssBot, pos, norm, falloff, tiling, normalScale, "float3(" + topIndex + "," + midIndex + "," + botIndex + ")" );
+				call = dataCollector.AddFunctions( callHeader, samplingTriplanar, texTop + stTop + ssTop, texMid + stMid + ssMid, texBot + stBot + ssBot, pos, norm, falloff, tiling, normalScale, "float3(" + topIndex + "," + midIndex + "," + botIndex + ")" );
 			string triplanarVarName = "triplanar" + OutputId;
 
 			dataCollector.AddToLocalVariables( dataCollector.PortCategory, UniqueId, type + " "+ triplanarVarName + " = " + call + ";" );
